@@ -1,0 +1,16 @@
+# Require Python 3.10 or higher
+python_version >= "3.10"
+
+# PyTorch (GPU with CUDA 11.8)
+torch==2.3.0+cu118
+torchvision==0.18.0+cu118
+torchaudio==2.3.0+cu118
+--extra-index-url https://download.pytorch.org/whl/cu118
+
+# MongoDB client
+pymongo
+
+# Hugging Face libraries
+transformers
+datasets
+accelerate
