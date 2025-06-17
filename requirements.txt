@@ -11,3 +11,6 @@ pymongo
 transformers
 datasets
 accelerate
+peft
+bitsandbytes
+bert-score
