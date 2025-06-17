@@ -14,3 +14,16 @@ accelerate
 peft
 bitsandbytes
 bert-score
+
+# Jupyter support
+ipykernel
+
+# Progress bar utility
+tqdm
+
+# Mistral tokenizer and protocol support
+mistral-common
+
+# Key loading
+python-dotenv
+ipywidgets
