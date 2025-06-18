@@ -14,8 +14,7 @@ import torch
 from bert_score import score
 from transformers import DataCollatorForLanguageModeling, Trainer, TrainerCallback
 
-#Define a function to format the dataset examples into a prompt
-#The prompt will include the context, question, and answer
+#Define a function to format the dataset examples into a prompt taht will include the context, question, and answer
 def make_prompt(example):
     context = example["context"]
     question = example["question"]
