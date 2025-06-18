@@ -32,3 +32,6 @@ ipywidgets
 pandas
 numpy
 scikit-learn
+
+#fronted
+streamlit
