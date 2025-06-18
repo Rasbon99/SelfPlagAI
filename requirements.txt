@@ -27,3 +27,8 @@ mistral-common
 # Key loading
 python-dotenv
 ipywidgets
+
+# Data processing and manipulation
+pandas
+numpy
+scikit-learn
