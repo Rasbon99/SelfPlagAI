@@ -1,2 +1,2 @@
-.env
+*.env
 try_mongodb.ipynb
