@@ -1,8 +1,7 @@
-# PyTorch (GPU with CUDA 11.8)
-torch==2.3.0+cu118
-torchvision==0.18.0+cu118
-torchaudio==2.3.0+cu118
---extra-index-url https://download.pytorch.org/whl/cu118
+# PyTorch (latest stable, auto-detects CUDA or installs CPU-only if no GPU)
+torch
+torchvision
+torchaudio
 
 # MongoDB client
 pymongo
