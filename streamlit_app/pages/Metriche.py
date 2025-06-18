@@ -5,16 +5,9 @@ st.title("📊 Metriche di valutazione")
 
 df = load_mock_metrics()
 
-st.subheader("🔹 EM Score (Exact Match)")
+# Mostra le metriche EM Score e F1 Score in un unico grafico a linee
 st.line_chart(
-    data=df,
-    x="Step Fine-Tuning",
-    y="EM Score"
+    data=df.set_index("Step Fine-Tuning")[["EM Score", "F1 Score"]],
+    use_container_width=True
 )
 
-st.subheader("🔹 F1 Score")
-st.line_chart(
-    data=df,
-    x="Step Fine-Tuning",
-    y="F1 Score"
-)
