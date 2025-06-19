@@ -1,7 +1,0 @@
-{
-  "original_train_size": 130319,
-  "original_validation_size": 11873,
-  "extracted_train_size": 651,
-  "extracted_test_size": 59,
-  "extraction_percentage": 0.5
-}
