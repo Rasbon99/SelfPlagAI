@@ -30,5 +30,5 @@ ipywidgets
 
 # Data processing and manipulation
 pandas
-numpy
+numpy<2  # Pin to NumPy 1.x for compatibility with PyTorch 2.2.2
 scikit-learn
