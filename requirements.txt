@@ -29,6 +29,4 @@ python-dotenv
 ipywidgets
 
 # Data processing and manipulation
-pandas
-numpy
-scikit-learn
+numpy<2  # Pin to NumPy 1.x for compatibility with PyTorch 2.2.2
