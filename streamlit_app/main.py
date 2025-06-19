@@ -1,34 +1,49 @@
+# streamlit_app/main.py
+
 import streamlit as st
+from utils.mock_data import load_all_mock_data
 
-# Configurazione della pagina
-st.set_page_config(page_title="SelfPlagAI - Prompt Inference", layout="centered")
+# Configura la pagina
+st.set_page_config(page_title="SelfPlagAI", layout="wide")
+st.title("🧠 Dashboard SelfPlagAI")
 
-st.title("🧠 Invia un Prompt al Modello")
-st.write("Inserisci una domanda e scegli il modello per generare una risposta.")
+# Carica tutti i dati mock
+data = load_all_mock_data()
 
-# Input dell'utente
-prompt = st.text_area("📥 Inserisci il tuo prompt:", placeholder="Es. Spiega il principio di funzionamento di un motore a combustione interna.")
+# ─────────────────────────────────────────────
+# Prompt selezionabile
+st.header("📌 Seleziona un prompt predefinito")
 
-# Selezione del modello
-model_options = [
-    "Phi-3-mini Instruct",
-    "Mistral 7B Instruct v0.2",
-    "Qwen 1.5 7B Chat",
-    "Gemma 2 7B",
-    "LLaMA 3 8B Instruct",
-    "Mixtral 8x7B MoE",
-    "OpenChat 3.5 7B"
-]
+prompt_options = list(data.keys())
+selected_prompt = st.selectbox("Prompt:", prompt_options)
 
-selected_model = st.selectbox("🤖 Scegli un modello:", model_options)
+# ─────────────────────────────────────────────
+# Selezione delle metriche da visualizzare
+st.header("📊 Metriche di valutazione")
 
-# Pulsante per inviare
-if st.button("Genera risposta"):
-    if not prompt.strip():
-        st.warning("⚠️ Inserisci un prompt prima di continuare.")
-    else:
-        # Per ora simula una risposta
-        st.info(f"✅ Prompt ricevuto: `{prompt}`")
-        st.info(f"📌 Modello selezionato: `{selected_model}`")
-        st.success("🚧 La risposta sarà generata non appena l'inference sarà collegata.")
+available_metrics = ["EM Score", "F1 Score"]
+selected_metrics = st.multiselect(
+    "Scegli le metriche da visualizzare:",
+    options=available_metrics,
+    default=available_metrics
+)
+
+metrics_df = data[selected_prompt]["metrics"]
+
+if selected_metrics:
+    st.line_chart(
+        data=metrics_df.set_index("Step Fine-Tuning")[selected_metrics],
+        use_container_width=True
+    )
+else:
+    st.info("⬅️ Seleziona almeno una metrica per vedere il grafico.")
+
+st.divider()
+
+# ─────────────────────────────────────────────
+# Visualizzazione risposte
+st.header("💬 Risposte Fine-Tuned")
+
+responses_df = data[selected_prompt]["responses"]
+st.dataframe(responses_df, use_container_width=True)
 
