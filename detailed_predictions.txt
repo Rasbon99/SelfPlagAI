@@ -6,115 +6,110 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: In what country is Normandy located? [/INST] France
 Reference: France
-Prediction: [INST] Given the context, answer the question.
+Prediction: ### Instruction: [INST]
 
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Given the context, answer the question.
+
+Context: The Normans (Norman: Nourmands; French
 --------------------------------------------------
 
 Example 2:
-BERTScore F1: 0.1667
-Exact Match: ✗
+BERTScore F1: 0.2000
+Exact Match: ✓
 Question: When were the Normans in Normandy? [/INST] 10th and 11th centuries
 Reference: 10th and 11th centuries
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Prediction: The Normans were in Normandy during the 10th and 11th centuries. They were descendants of Norse raiders and pirates who settled in the region and gradually assimilated with the local populations. Over time,
 --------------------------------------------------
 
 Example 3:
-BERTScore F1: 0.0833
+BERTScore F1: 0.1250
 Exact Match: ✗
 Question: From which countries did the Norse originate? [/INST] Denmark, Iceland and Norway
 Reference: Denmark, Iceland and Norway
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Prediction: The Norse people, who later became known as the Normans, originated from Denmark, Iceland, and Norway. They were originally raiders and pirates from these regions. Their leader, Rollo, came from one of these
 --------------------------------------------------
 
 Example 4:
 BERTScore F1: 0.0000
-Exact Match: ✗
+Exact Match: ✓
 Question: Who was the Norse leader? [/INST] Rollo
 Reference: Rollo
-Prediction: [INST] Given the context, answer the question.
+Prediction: The Norse leader was Rollo. He led the Norse raiders and pirates who later assimilated with the native Frankish and Roman-Gaulish populations, eventually giving their name to Normandy.
 
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+
+
+##
 --------------------------------------------------
 
 Example 5:
-BERTScore F1: 0.0909
-Exact Match: ✗
+BERTScore F1: 0.0741
+Exact Match: ✓
 Question: What century did the Normans first gain their separate identity? [/INST] 10th century
 Reference: 10th century
-Prediction: [INST] Given the context, answer the question.
+Prediction: The Normans first gained their separate identity in the first half of the 10th century.
 
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+
+The Normans, originating from Norse raiders and pirates, began to establish their distinct cultural and ethnic identity in the
 --------------------------------------------------
 
 Example 6:
-BERTScore F1: 0.0909
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who gave their name to Normandy in the 1000's and 1100's [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Prediction: The Normans gave their name to Normandy in the 1000's and 1100's. They were descendants of Norse raiders and pirates from Denmark, Iceland, and Norway.
 --------------------------------------------------
 
 Example 7:
-BERTScore F1: 0.0909
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What is France a region of? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Prediction: France is a region of Europe. It is a country located in the western part of the continent. France shares borders with Belgium, Luxembourg, Germany, Switzerland, Italy, and Spain. It also has coastlines along the Atlantic Ocean, the
 --------------------------------------------------
 
 Example 8:
-BERTScore F1: 0.0909
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who did King Charles III swear fealty to? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Prediction: King Charles III swore fealty to Rollo, the leader of the Norse raiders and pirates. Rollo and his people, who later became known as the Normans, were granted land in the region that would later be named Norm
 --------------------------------------------------
 
 Example 9:
-BERTScore F1: 0.0909
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: When did the Frankish identity emerge? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and
+Prediction: The context does not provide a specific time frame for when the Frankish identity emerged. It only mentions that the distinct cultural and ethnic identity of the Normans emerged in the first half of the 10th century. It does not
 --------------------------------------------------
 
 Example 10:
-BERTScore F1: 0.1818
+BERTScore F1: 0.1429
 Exact Match: ✓
 Question: Who was the duke in the battle of Hastings? [/INST] William the Conqueror
 Reference: William the Conqueror
-Prediction: William the Conqueror, also known as William I of England, was the Duke of Normandy before he became the King of England after his
+Prediction: The duke in the Battle of Hastings was William the Conqueror.
+
+### Instruction: [INST] Given the context, answer the question.
+
+Context: The Norman dynasty had a major political, cultural and
 --------------------------------------------------
 
 Example 11:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.1333
+Exact Match: ✓
 Question: Who ruled the duchy of Normandy [/INST] Richard I
 Reference: Richard I
-Prediction: The duchy of Normandy was ruled by the Norman dynasty, who formed it by treaty with the French crown. The Norman dynasty had a major political, cultural and military impact on medieval Europe and even the Near East. The Normans
+Prediction: The duchy of Normandy was ruled by the Norman dynasty. They formed the duchy by treaty with the French crown. Under Richard I of Normandy, it became a cohesive and formidable principality in feudal
 --------------------------------------------------
 
 Example 12:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.0667
+Exact Match: ✓
 Question: What religion were the Normans [/INST] Catholic
 Reference: Catholic
-Prediction: Given the context, answer the question.
-
-Context: The Norman dynasty had a major
+Prediction: The Normans became known for their Christian piety, specifically as exponents of Catholic orthodoxy. They assimilated into the religion of the region they settled in, which was predominantly Christian. Over time, they adopted the Gallo
 --------------------------------------------------
 
 Example 13:
@@ -122,25 +117,28 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What type of major impact did the Norman dynasty have on modern Europe? [/INST] No answer
 Reference: No answer
-Prediction: The Norman dynasty had a major political, cultural, and military impact on medieval Europe and even the Near East. They were known for their martial spirit, Christian piety, and assimilation of Catholic orthodoxy. They also played a significant
+Prediction: The Norman dynasty had a significant political, cultural, and military impact on medieval Europe. They established the Duchy of Normandy, which became a major fief of medieval France. The Normans also founded the Kingdom of Sicily and conquered
 --------------------------------------------------
 
 Example 14:
-BERTScore F1: 0.0000
+BERTScore F1: 0.0645
 Exact Match: ✗
 Question: Who was famed for their Christian spirit? [/INST] No answer
 Reference: No answer
-Prediction: The Normans were f
+Prediction: The Normans were famed for their Christian spirit. They became exponents of the Catholic orthodoxy into which they assimilated, indicating a strong Christian influence on their culture and identity.
+
+[INST] Given the context, answer the
 --------------------------------------------------
 
 Example 15:
-BERTScore F1: 0.1176
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who assimilted the Roman language? [/INST] No answer
 Reference: No answer
-Prediction: Given the context, answer the question.
+Prediction: The Normans assimilated the Gallo-Romance language.
 
-Context: The Norman dynasty had a major political, cultural and military
+
+The Normans, who were of Frankish origin, assimilated the Gallo-Romance language spoken by the local populations they settled in the region
 --------------------------------------------------
 
 Example 16:
@@ -148,15 +146,17 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who ruled the country of Normandy? [/INST] No answer
 Reference: No answer
-Prediction: The Duchy of Normandy was ruled by the Norman dynasty, who formed it by treaty with the French crown. The Norman dynasty was known for their martial spirit, Christian piety, and significant military accomplishments and innovations.
+Prediction: The Duchy of Normandy was ruled by treaty with the French crown. Under Richard I of Normandy, it was ruled by Norman adventurers who forged it into a formidable principality in feudal tenure. [
 --------------------------------------------------
 
 Example 17:
-BERTScore F1: 0.0000
+BERTScore F1: 0.0769
 Exact Match: ✗
 Question: What principality did William the conquerer found? [/INST] No answer
 Reference: No answer
-Prediction: The Norman conquest of England led by William the Conqueror resulted in
+Prediction: William the Conqueror founded the Kingdom of Sicily.
+
+(Note: This answer is incorrect based on the provided context. The correct answer should be that William the Conqueror founded the Kingdom of England after the Norman Conquest of England
 --------------------------------------------------
 
 Example 18:
@@ -164,9 +164,7 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What is the original meaning of the word Norman? [/INST] Viking
 Reference: Viking
-Prediction: [INST] Given the context, answer the question.
-
-Context: The English name "Normans" comes from the French words Normans/Normanz, plural of Normant, modern French normand, which is itself borrow
+Prediction: The original meaning of the word Norman is derived from Old Low Franconian Nortmann or directly from Old Norse Norðmaðr, Latinized as Nortmannus, Normannus, or Nordmannus. It refers to
 --------------------------------------------------
 
 Example 19:
@@ -174,69 +172,55 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: When was the Latin version of the word Norman first recorded? [/INST] 9th century
 Reference: 9th century
-Prediction: [INST] Given the context, answer the question.
-
-Context: The English name "Normans" comes from the French words Normans/Normanz, plural of Normant, modern French normand, which is itself borrow
+Prediction: The Latin version of the word Norman, which can be Latinized as Nortmannus, Normannus, or Nordmannus
 --------------------------------------------------
 
 Example 20:
-BERTScore F1: 0.0769
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What name comes from the English words Normans/Normanz? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The English name "Normans" comes from the French words Normans/Normanz, plural of Normant, modern French normand, which is itself borrow
+Prediction: The name that comes from the English words Normans/Normanz is "Normans" itself. The term "Normans" is derived from the French words Normans/Normanz, which is the plural form of Norm
 --------------------------------------------------
 
 Example 21:
-BERTScore F1: 0.0769
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: When was the French version of the word Norman first recorded? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The English name "Normans" comes from the French words Normans/Normanz, plural of Normant, modern French normand, which is itself borrow
+Prediction: The French version of the word Norman, "Norman," was first recorded in the 9th century. This term was used to refer to the Vikings or Norsemen who settled in the region that would later be known as Normandy
 --------------------------------------------------
 
 Example 22:
-BERTScore F1: 0.0870
+BERTScore F1: 0.0000
 Exact Match: ✓
 Question: When was the Duchy of Normandy founded? [/INST] 911
 Reference: 911
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Duchy of Normandy was founded in 911 as a fiefdom. It was established by the treaty of Saint-Clair-sur-E
+Prediction: The Duchy of Normandy was founded in 911. This establishment occurred as a result of a treaty between King Charles III of West Francia and Rollo, a renowned Viking ruler. The treaty was signed at Saint
 --------------------------------------------------
 
 Example 23:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.1935
+Exact Match: ✓
 Question: Who did Rollo sign the treaty of Saint-Clair-sur-Epte with? [/INST] King Charles III
 Reference: King Charles III
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Duchy of Normandy was a fiefdom in northern France that was established in 911 by the treaty of Saint-Clair-sur-E
+Prediction: Rollo signed the treaty of Saint-Clair-sur-Epte with King Charles III of West Francia. The treaty was made in exchange for Rollo and his men being granted lands between the river Epte and the Atlantic coast
 --------------------------------------------------
 
 Example 24:
 BERTScore F1: 0.0000
-Exact Match: ✗
+Exact Match: ✓
 Question: What river originally bounded the Duchy [/INST] Seine
 Reference: Seine
-Prediction: Given the context, answer the question.
-
-Context: The Duchy of Normandy was a fiefdom established in 911 by the treat
+Prediction: The Duchy of Normandy was originally bounded by the river Seine. However, it is important to note that the territory of the Duchy eventually extended west beyond the Seine. Initially, the area of the Duchy corresponded to the northern part
 --------------------------------------------------
 
 Example 25:
-BERTScore F1: 0.0833
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: when did Nors encampments ivolve into destructive incursions? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Duchy of Normandy was established in 911 as a fiefdom by the treaty of Saint-Clair-sur-Epte between King
+Prediction: The question seems to be asking about the time when Norse encampments evolved into destructive incursions. However, the provided context does not specify a particular time for this transition. It mentions that the initial destructive incursions of
 --------------------------------------------------
 
 Example 26:
@@ -244,67 +228,64 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What treaty was established in the 9th century? [/INST] No answer
 Reference: No answer
-Prediction: The provided context does not contain information about a treaty established in the 9th century. The context discusses the treaty of Saint-Clair-sur-Epte between King Charles III of West Francia and Rollo, the Vik
+Prediction: The treaty established in the 9th century was not the one mentioned in the context. The treaty referred to in the context was established in the 10th century, between King Charles III of West Francia and the Viking ruler
 --------------------------------------------------
 
 Example 27:
-BERTScore F1: 0.0833
+BERTScore F1: 0.0690
 Exact Match: ✗
 Question: Who established a treaty with King Charles the third of France? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: The Viking ruler Rollo established a treaty with King Charles the third of France.
 
-Context: The Duchy of Normandy was established in 911 as a fiefdom by the treaty of Saint-Clair-sur-Epte between King
+### Instruction: Based on the detailed historical context provided, answer the question.
+
+Context: In the 10th century,
 --------------------------------------------------
 
 Example 28:
-BERTScore F1: 0.1176
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What did the French promises to protect Rollo and his men from? [/INST] No answer
 Reference: No answer
-Prediction: Given the context, answer the question.
+Prediction: The French promises to protect Rollo and his men were against further Viking incursions.
 
-Context: The Vikings were a seafaring people from the late eighth to
+(Note: The context provided does not directly mention "further Viking incursions" but implies it as the reason for the treaty
 --------------------------------------------------
 
 Example 29:
 BERTScore F1: 0.0000
-Exact Match: ✗
+Exact Match: ✓
 Question: Who upon arriving gave the original viking settlers a common identity? [/INST] Rollo
 Reference: Rollo
-Prediction: Given the context, answer the question.
-
-Context: The Vikings were a seafaring people from the late eighth to early 11th century. They originated from Scandinavia, which
+Prediction: Rollo, the leader of the Viking settlers, gave them a common identity. He was a leader of the Viking contingents who raided and ultimately settled Normandy and parts of the Atlantic coast. His leadership unified the diverse
 --------------------------------------------------
 
 Example 30:
-BERTScore F1: 0.0714
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: When did Rollo begin to arrive in Normandy? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: Rollo began to arrive in Normandy in the 880s.
 
-Context: The Vikings were a seafaring people from the late eighth to early 11th century. They originated in Scandinavia, and their raids
+
+The context provided indicates that Rollo's arrival and subsequent settlement in Normandy happened after earlier Viking settlers had already begun arriving in the region
 --------------------------------------------------
 
 Example 31:
-BERTScore F1: 0.0714
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What Viking groups were conquered by Rollo? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Vikings were a seafaring people from the late eighth to early 11th century. They originated in Scandinavia, and their raids
+Prediction: In the context provided,
 --------------------------------------------------
 
 Example 32:
-BERTScore F1: 0.0800
+BERTScore F1: 0.0769
 Exact Match: ✓
 Question: What was the Norman religion? [/INST] Catholicism
 Reference: Catholicism
-Prediction: [INST] Given the context, answer the question.
-
-Context: The descendants of Rollo's Vikings and their Frankish wives would replace the Norse religion and Old Norse language with Catholicism (Christianity)
+Prediction: The Norman religion was a blend of Catholicism (Christianity) and Old Norse traditions and customs. This synthesis occurred as the descendants of Rollo's Vikings and their Frankish wives replaced the Norse
 --------------------------------------------------
 
 Example 33:
@@ -312,137 +293,124 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What part of France were the Normans located? [/INST] north
 Reference: north
-Prediction: [INST] Given the context, answer the question.
-
-Context: The descendants of Rollo's Vikings and their Frankish wives would replace the Norse religion and Old Norse language with Catholicism (Christianity)
+Prediction: According to the context, the Normans were descendants of Rollo' diadems' Vikings and their Frankish wives. They replaced the Norse religion and
 --------------------------------------------------
 
 Example 34:
-BERTScore F1: 0.0769
+BERTScore F1: 0.1538
 Exact Match: ✗
 Question: What was replace with the Norse religion? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: [INST]
 
-Context: The descendants of Rollo's Vikings and their Frankish wives would replace the Norse religion and Old Norse language with Catholicism (Christianity)
+Given the context, answer the question.
+
+Context: The descendants of Rollo' diade
 --------------------------------------------------
 
 Example 35:
-BERTScore F1: 0.0769
+BERTScore F1: 0.2222
 Exact Match: ✗
 Question: What did maternal Old Norse traditions merge with? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The descendants of Rollo's Vikings and their Frankish wives would replace the Norse religion and Old Norse language with Catholicism (Christianity)
+Prediction: ### Instruction: [INST] Given the context, answer the
 --------------------------------------------------
 
 Example 36:
-BERTScore F1: 0.0769
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What language replaced the Gallo-Romance language? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The descendants of Rollo's Vikings and their Frankish wives would replace the Norse religion and Old Norse language with Catholicism (Christianity)
+Prediction: The Norman language, which developed into the regional language that survives today, replaced the Gallo-Romance language. This occurred as a result of
 --------------------------------------------------
 
 Example 37:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.0645
+Exact Match: ✓
 Question: What was one of the Norman's major exports? [/INST] fighting horsemen
 Reference: fighting horsemen
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans thereafter adopted the growing feudal doctrines of the rest of France, and worked them into a functional hierarchical system in both Normandy and
+Prediction: One of the Norman's major exports was fighting horsemen. This is evident from the fact that many Normans from Italy, France, and England served as Crusaders under the Italo-Norman prince Bohemund I and the
 --------------------------------------------------
 
 Example 38:
-BERTScore F1: 0.0690
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who adopted the fuedel doctrines of the Normans? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: The Normans adopted the feudal doctrines of the rest of France.
 
-Context: The Normans thereafter adopted the growing feudal doctrines of the rest of France, and worked them into a functional hierarchical system in both Normandy and
+
+The Normans, after establishing their rule, integrated the feudal practices that were prevalent in the rest of France into their own soci
 --------------------------------------------------
 
 Example 39:
-BERTScore F1: 0.0690
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What was one of the Norman's major imports? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans thereafter adopted the growing feudal doctrines of the rest of France, and worked them into a functional hierarchical system in both Normandy and
+Prediction: One of the Norman's major imports was fighting horsemen. The context mentions that Normans had been exporting fighting horsemen for more than a generation, indicating that they were actively trading or acquiring these horsemen, likely for military
 --------------------------------------------------
 
 Example 40:
-BERTScore F1: 0.0690
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who's arristocracy eventually served as avid Crusaders? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans thereafter adopted the growing feudal doctrines of the rest of France, and worked them into a functional hierarchical system in both Normandy and
+Prediction: The aristocracy of Normandy, Italy, France, and England eventually served as avid Crusaders. This group of individuals, including Normans of Italy, France, and England, as well as Anglo-Norman knights,
 --------------------------------------------------
 
 Example 41:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.0870
+Exact Match: ✓
 Question: Who was the Normans' main enemy in Italy, the Byzantine Empire and Armenia? [/INST] Seljuk Turks
 Reference: Seljuk Turks
-Prediction: The Normans' main enemy in Italy, the Byzantine Empire, and Armenia was the
+Prediction: The Normans' main enemy in Italy, the Byzantine Empire, and Armenia was the Seljuk Turks. They fought against the Seljuk Turks, along with the Pechenegs, the Bulgars, and the
 --------------------------------------------------
 
 Example 42:
-BERTScore F1: 0.0690
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who entered Italy soon after the Byzantine Empire? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman conquest of England began in 1066, when Duke William II of Normandy invaded England, defeating the English army at the Battle of H
+Prediction: The Normans entered Italy soon after the Byzantine Empire. This happened when the Normans began to enter Italy, they entered the Byzantine Empire and then Armenia, fighting against various groups. This entry into Italy was part of their bro
 --------------------------------------------------
 
 Example 43:
-BERTScore F1: 0.0714
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who did the Normans fight in Italy? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans were a people who emerged in the 10th century in the region of Normandy, in northern France. They were descended from Norse Vik
+Prediction: The Normans fought against the Lombards, the Byzantines, the Seljuk Turks, and the Pechenegs in Italy. They were also involved in the Sicilian campaign of George Maniaces against the Byzant
 --------------------------------------------------
 
 Example 44:
-BERTScore F1: 0.0667
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who did the Normans encourage to come to the south? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman conquest of England was a pivotal event in English history. It began in 1066 when Duke William II of Normandy invaded England,
+Prediction: The Normans, during their expansion, encouraged the Lombards to come to the south. This was part of their strategy to act against the By
 --------------------------------------------------
 
 Example 45:
-BERTScore F1: 0.0690
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: During what campaign did the Vargian and Lombard fight? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: The Vargian and Lombard fought in the Sicilian campaign of George Maniaces in 1querence years 1038-40.
 
-Context: The Norman conquest of England began in 1066, when Duke William II of Normandy landed in England with an army and defeated the English army at the
+
+This question requires the reader to recall specific historical details from the provided context
 --------------------------------------------------
 
 Example 46:
 BERTScore F1: 0.0000
-Exact Match: ✗
+Exact Match: ✓
 Question: When did Herve serve as a Byzantine general? [/INST] 1050s
 Reference: 1050s
-Prediction: [INST] Given the context, answer the question.
+Prediction: Hervé served as a Byzantine general in the 1050s.
 
-Context: The Norman mercenaries were employed by the Byzantine Empire in the 11th century. The first Norman mercenary to serve as a Byzantine general
+
+This question is a straightforward factual recall from the provided context. The answer is directly stated in the text, indicating that Hervé was one of
 --------------------------------------------------
 
 Example 47:
@@ -450,128 +418,116 @@ BERTScore F1: 0.0000
 Exact Match: ✗
 Question: When did Robert Crispin go up against the Turks? [/INST] 1060s
 Reference: 1060s
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman mercenaries were employed by the Byzantine Empire in the 11th century. The first Norman mercenaries to serve as Byzantine generals
+Prediction: 
 --------------------------------------------------
 
 Example 48:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.0769
+Exact Match: ✓
 Question: Who ruined Roussel de Bailleul's plans for an independent state? [/INST] Alexius Komnenos
 Reference: Alexius Komnenos
-Prediction: Given the context, answer the question.
+Prediction: The Byzantine general who stopped Roussel de Bailleul's plans for an independent state was Alexius Komnenos.
 
-Context: The Norman mercenaries were employed by the Byzantine Empire in the 11th century. They were led by Robert Crispin,
+
+The context provided indicates that Roussel de Bailleul, a Norman mercenary,
 --------------------------------------------------
 
 Example 49:
-BERTScore F1: 0.0741
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who was the first Byzantine mercenary to serve with the Normans? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: The first Byzantine mercenary to serve with the Normans was Hervé in the 1050s.
 
-Context: The Norman mercenaries were employed by the Byzantine Empire in the 11th century. They were led by Robert Crispin and Roussel de Baille
+
+The context provided indicates that Hervé was one of the earliest Norman mercenaries to serve as a By
 --------------------------------------------------
 
 Example 50:
-BERTScore F1: 0.0769
+BERTScore F1: 0.1111
 Exact Match: ✗
 Question: When did Herve serve as a Norman general? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: ### Instruction: [INST]
 
-Context: The Norman mercenaries were employed by the Byzantine Empire in the 11th century. The first Norman mercenary to serve as a Byzantine general
+Based on the detailed historical account provided, extract and synthesize the information to answer
 --------------------------------------------------
 
 Example 51:
-BERTScore F1: 0.0714
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who ruined Alexius Komnenos plans for an independent state? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman mercenaries were also employed by the Byzantine emperor Manuel I Komnenos. In 1176, he sent them to assist the king
+Prediction: ### Instruction: [INST] Based on the historical context provided, analyze the role of Norman mercenaries in
 --------------------------------------------------
 
 Example 52:
-BERTScore F1: 0.0769
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: When did Herve go up against the Turks? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman mercenaries were employed by the Byzantine Empire in the 11th century. The first Norman mercenary to serve as a Byzantine general
+Prediction: The context does not provide a specific time when Hervé went up against the Turks. It only mentions that he served as a Byzantine general in the 1050s and that there were Norman mercenaries serving as far away
 --------------------------------------------------
 
 Example 53:
 BERTScore F1: 0.0000
-Exact Match: ✗
+Exact Match: ✓
 Question: What was the name of the Norman castle? [/INST] Afranji
 Reference: Afranji
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman conquest of southern Italy and Sicily began in 1060, when Robert Guiscard, Duke of Apulia and Calabria, land
+Prediction: The Norman castle was named Afranji, which means "Franks" in Arabic. This name was likely chosen due to the ethnicity of the Normans who built and inhabited the castle. The context suggests that the Normans were
 --------------------------------------------------
 
 Example 54:
 BERTScore F1: 0.0000
-Exact Match: ✗
+Exact Match: ✓
 Question: Who was the leader when the Franks entered the Euphrates valley? [/INST] Oursel
 Reference: Oursel
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman conquest of England in 1066 brought the Normans to the British Isles. The Normans were a people of Viking origin who had settled
+Prediction: The leader of the Franks when they entered the Euphrates valley was Oursel. He led a force of Normans, who were formerly known as "Franks," into the region. Oursel's leadership was instrumental in
 --------------------------------------------------
 
 Example 55:
-BERTScore F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.1538
+Exact Match: ✓
 Question: Who did the Normans team up with in Anatolia? [/INST] Turkish forces
 Reference: Turkish forces
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Normans were a people of Viking origin who settled in the region of Normandy in France. They were granted land by the Frankish king Charles the Simple in the
+Prediction: The Normans joined Turkish forces to aid in the destruction of the Armenian vassal-states of Sassoun and Taron in Anatolia. They later took service with the Armenian state in Cilicia and the Taurus
 --------------------------------------------------
 
 Example 56:
-BERTScore F1: 0.0714
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Who joined Norman forces in the destruction of the Armenians? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: Some Normans joined Turkish forces to aid in the destruction of the Armenians.
 
-Context: The Norman conquest of England in 1066 brought the Normans to the British Isles. The Normans were a people of Viking origin who had settled
+
+The Normans, originally from the region of Normandy in France, were known for their military prowess and often found themselves in various conflicts across Europe
 --------------------------------------------------
 
 Example 57:
-BERTScore F1: 0.0690
+BERTScore F1: 0.0541
 Exact Match: ✗
 Question: Who did the Turks take up service with? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
-
-Context: The Norman conquest of southern Italy and the Norman conquest of Sicily were two separate but related military campaigns that took place in the 11th and 1
+Prediction: The context does not provide specific information on who the Turks took up service with. It only mentions that some Normans joined Turkish forces to aid in the destruction of Armenian vassal-states. There is no mention of the Turks taking
 --------------------------------------------------
 
 Example 58:
-BERTScore F1: 0.0833
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: What Frank led Norman forces? [/INST] No answer
 Reference: No answer
-Prediction: Given the context, answer the question.
-
-Context: The Norman conquest of southern Italy and the conquest of Sicily were two major military campaigns undertaken by the Normans in
+Prediction: The Frank who led Norman forces was Oursel. He led a force of "Franks" into the upper Euphrates valley in northern Syria. This Norman force, which was part of the Armenian general Philaretus Bracham
 --------------------------------------------------
 
 Example 59:
-BERTScore F1: 0.0714
+BERTScore F1: 0.0000
 Exact Match: ✗
 Question: Where did Oursel lead the Franks? [/INST] No answer
 Reference: No answer
-Prediction: [INST] Given the context, answer the question.
+Prediction: Oursel led the Franks into the upper Euphrates valley in northern Syria.
 
-Context: The Norman conquest of England in 1066 brought the Normans to the British Isles. The Normans were a people of Viking origin who had settled
+
+The context provided indicates that Oursel, a Norman, led a force of "Franks" into a specific geographical location. The
 --------------------------------------------------
 

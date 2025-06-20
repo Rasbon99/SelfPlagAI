@@ -1,0 +1,15 @@
+EVALUATION SUMMARY - GENERATION 0
+============================================================
+
+Model: microsoft/phi-3-mini-128k-instruct
+Generation: 0
+Test Dataset: squad_v2_05percent
+Test Set Size: 59
+
+METRICS:
+Exact Match: 0.3051
+F1 Score: 0.0364
+BERTScore F1: 0.7949
+Semantic Similarity: 0.0195
+Avg Prediction Length: 30.24 words
+Avg Reference Length: 1.88 words

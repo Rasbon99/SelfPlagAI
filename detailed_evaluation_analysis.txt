@@ -1,0 +1,249 @@
+DETAILED TEST SET EVALUATION ANALYSIS
+================================================================================
+
+EVALUATION RESULTS SUMMARY
+------------------------------------------------------------
+Test Set Size: 11
+Exact Match: 0.1818
+F1 Score: 0.1409
+BERTScore F1: 0.7556
+Semantic Similarity: 0.1000
+Avg Prediction Length: 10.55 words
+Avg Reference Length: 2.36 words
+
+DETAILED PREDICTION EXAMPLES
+================================================================================
+
+
+BEST PREDICTIONS:
+--------------------------------------------------------------------------------
+
+Example 1 (Index 8):
+BERTScore F1: 0.9520
+Token F1: 0.4000
+Exact Match: ✓
+Question: What did the Merwede-Oude Maas form with Waal and Lek?
+Context: Before the St. Elizabeth's flood (1421), the Meuse flowed just south of today's line Merwede-Oude Maas to the North Sea and formed an archipelago-like estuary with Waal and Lek. This system of numerou...
+Reference Answer: archipelago-like estuary
+Model Prediction: An archipelago-like estuary.
+Length: Pred=3 words, Ref=2 words
+Common words: 1
+--------------------------------------------------
+
+Example 2 (Index 7):
+BERTScore F1: 0.8824
+Token F1: 0.4000
+Exact Match: ✓
+Question: How much windblown dust leaves the Sahara each year?
+Context: NASA's CALIPSO satellite has measured the amount of dust transported by wind from the Sahara to the Amazon: an average 182 million tons of dust are windblown out of the Sahara each year, at 15 degrees...
+Reference Answer: 182 million tons
+Model Prediction: 182 million tons of dust are windblown out of the Sahara each year.
+Length: Pred=13 words, Ref=3 words
+Common words: 3
+--------------------------------------------------
+
+Example 3 (Index 2):
+BERTScore F1: 0.8526
+Token F1: 0.7500
+Exact Match: ✗
+Question: Who are commonly associated with the algorithm typically considered the most effective with respect to finite polynomial hierarchy and graph isomorphism?
+Context: The graph isomorphism problem is the computational problem of determining whether two finite graphs are isomorphic. An important unsolved problem in complexity theory is whether the graph isomorphism ...
+Reference Answer: Laszlo Babai and Eugene Luks
+Model Prediction: Babai and Luks
+Length: Pred=3 words, Ref=5 words
+Common words: 3
+--------------------------------------------------
+
+WORST PREDICTIONS:
+--------------------------------------------------------------------------------
+
+Example 1 (Index 1):
+BERTScore F1: 0.7861
+Token F1: 0.0000
+Exact Match: ✗
+Question: What do cilia use their bodies for?
+Context: Ranging from about 1 millimeter (0.039 in) to 1.5 meters (4.9 ft) in size, ctenophores are the largest non-colonial animals that use cilia ("hairs") as their main method of locomotion. Most species ha...
+Reference Answer: No answer
+Model Prediction: Cilia are hair-like structures that extend from the surface of certain cells. In the context of ctenophores, which are also known as comb jellies, c
+Length: Pred=25 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 2 (Index 9):
+BERTScore F1: 0.7699
+Token F1: 0.0000
+Exact Match: ✗
+Question: Quantum theory was used to develop a new theory of what?
+Context: However, attempting to reconcile electromagnetic theory with two observations, the photoelectric effect, and the nonexistence of the ultraviolet catastrophe, proved troublesome. Through the work of le...
+Reference Answer: No answer
+Model Prediction: Electromagnetism
+Length: Pred=1 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 3 (Index 3):
+BERTScore F1: 0.0000
+Token F1: 0.0000
+Exact Match: ✗
+Question: Why did the Royal Society think the Earth was older than previously thought?
+Context: James Hutton is often viewed as the first modern geologist. In 1785 he presented a paper entitled Theory of the Earth to the Royal Society of Edinburgh. In his paper, he explained his theory that the ...
+Reference Answer: No answer
+Model Prediction: 
+Length: Pred=0 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+RANDOM PREDICTIONS:
+--------------------------------------------------------------------------------
+
+Example 1 (Index 0):
+BERTScore F1: 0.8257
+Token F1: 0.0000
+Exact Match: ✗
+Question: How many State of California University campuses are there?
+Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-renowned research universi...
+Reference Answer: No answer
+Model Prediction: There are 12 California State University campuses.
+Length: Pred=7 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 2 (Index 10):
+BERTScore F1: 0.8164
+Token F1: 0.0000
+Exact Match: ✗
+Question: Where is Fielding H. Garrison from?
+Context: Some modern scholars, such as Fielding H. Garrison, are of the opinion that the origin of the science of geology can be traced to Persia after the Muslim conquests had come to an end. Abu al-Rayhan al...
+Reference Answer: No answer
+Model Prediction: Fielding H. Garrison is from the United States.
+Length: Pred=8 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 3 (Index 1):
+BERTScore F1: 0.7861
+Token F1: 0.0000
+Exact Match: ✗
+Question: What do cilia use their bodies for?
+Context: Ranging from about 1 millimeter (0.039 in) to 1.5 meters (4.9 ft) in size, ctenophores are the largest non-colonial animals that use cilia ("hairs") as their main method of locomotion. Most species ha...
+Reference Answer: No answer
+Model Prediction: Cilia are hair-like structures that extend from the surface of certain cells. In the context of ctenophores, which are also known as comb jellies, c
+Length: Pred=25 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 4 (Index 3):
+BERTScore F1: 0.0000
+Token F1: 0.0000
+Exact Match: ✗
+Question: Why did the Royal Society think the Earth was older than previously thought?
+Context: James Hutton is often viewed as the first modern geologist. In 1785 he presented a paper entitled Theory of the Earth to the Royal Society of Edinburgh. In his paper, he explained his theory that the ...
+Reference Answer: No answer
+Model Prediction: 
+Length: Pred=0 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+
+FULL PREDICTIONS LIST
+================================================================================
+
+Example 1:
+BERTScore F1: 0.8257
+Token F1: 0.0000
+Exact Match: ✗
+Question: How many State of California University campuses are there?
+Reference: No answer
+Prediction: There are 12 California State University campuses.
+--------------------------------------------------
+
+Example 2:
+BERTScore F1: 0.7861
+Token F1: 0.0000
+Exact Match: ✗
+Question: What do cilia use their bodies for?
+Reference: No answer
+Prediction: Cilia are hair-like structures that extend from the surface of certain cells. In the context of ctenophores, which are also known as comb jellies, c
+--------------------------------------------------
+
+Example 3:
+BERTScore F1: 0.8526
+Token F1: 0.7500
+Exact Match: ✗
+Question: Who are commonly associated with the algorithm typically considered the most effective with respect to finite polynomial hierarchy and graph isomorphism?
+Reference: Laszlo Babai and Eugene Luks
+Prediction: Babai and Luks
+--------------------------------------------------
+
+Example 4:
+BERTScore F1: 0.0000
+Token F1: 0.0000
+Exact Match: ✗
+Question: Why did the Royal Society think the Earth was older than previously thought?
+Reference: No answer
+Prediction: 
+--------------------------------------------------
+
+Example 5:
+BERTScore F1: 0.8163
+Token F1: 0.0000
+Exact Match: ✗
+Question: After what battle did Union forces leave Jacksonville for good?
+Reference: No answer
+Prediction: Battle of Olustee
+--------------------------------------------------
+
+Example 6:
+BERTScore F1: 0.7981
+Token F1: 0.0000
+Exact Match: ✗
+Question: Can a packet ever be sent to the wrong number?
+Reference: No answer
+Prediction: No, a packet cannot be sent to the wrong number. The packet includes complete addressing information, including the destination address, source address, and port numbers. This ensures that the packet is routed to the correct destination. However, packets may
+--------------------------------------------------
+
+Example 7:
+BERTScore F1: 0.8122
+Token F1: 0.0000
+Exact Match: ✗
+Question: What channel lost advertising revenue due to their plans?
+Reference: No answer
+Prediction: Explanation: The context mentions that industry sources believe BSkyB will be forced to shelve
+--------------------------------------------------
+
+Example 8:
+BERTScore F1: 0.8824
+Token F1: 0.4000
+Exact Match: ✓
+Question: How much windblown dust leaves the Sahara each year?
+Reference: 182 million tons
+Prediction: 182 million tons of dust are windblown out of the Sahara each year.
+--------------------------------------------------
+
+Example 9:
+BERTScore F1: 0.9520
+Token F1: 0.4000
+Exact Match: ✓
+Question: What did the Merwede-Oude Maas form with Waal and Lek?
+Reference: archipelago-like estuary
+Prediction: An archipelago-like estuary.
+--------------------------------------------------
+
+Example 10:
+BERTScore F1: 0.7699
+Token F1: 0.0000
+Exact Match: ✗
+Question: Quantum theory was used to develop a new theory of what?
+Reference: No answer
+Prediction: Electromagnetism
+--------------------------------------------------
+
+Example 11:
+BERTScore F1: 0.8164
+Token F1: 0.0000
+Exact Match: ✗
+Question: Where is Fielding H. Garrison from?
+Reference: No answer
+Prediction: Fielding H. Garrison is from the United States.
+--------------------------------------------------
+
