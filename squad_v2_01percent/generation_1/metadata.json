@@ -1,0 +1,7 @@
+{
+  "generation_number": 1,
+  "total_examples": 130,
+  "generated_from": "fine_tuned_model",
+  "description": "Synthetic answers generated using fine-tuned model (Generation 1)",
+  "format": "formatted_dataset_with_prompts"
+}

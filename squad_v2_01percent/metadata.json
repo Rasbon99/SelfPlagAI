@@ -1,0 +1,18 @@
+{
+  "original_train_size": 130319,
+  "original_validation_size": 11873,
+  "extracted_train_size": 130,
+  "extracted_test_size": 11,
+  "extraction_percentage": 0.1,
+  "sampling_method": "random",
+  "seed": 42,
+  "train_answerable": 94,
+  "test_answerable": 3,
+  "train_answerable_percentage": 72.3076923076923,
+  "test_answerable_percentage": 27.27272727272727,
+  "dataset_format": "squad_v2",
+  "splits": [
+    "train",
+    "test"
+  ]
+}
