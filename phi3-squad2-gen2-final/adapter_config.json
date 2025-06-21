@@ -25,8 +25,8 @@
   "revision": null,
   "target_modules": [
     "qkv_proj",
-    "o_proj",
     "down_proj",
+    "o_proj",
     "gate_up_proj"
   ],
   "task_type": "CAUSAL_LM",
