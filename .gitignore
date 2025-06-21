@@ -2,3 +2,4 @@
 try_mongodb.ipynb
 SelfPlagAI/
 .DS_Store
+__pycache__/
