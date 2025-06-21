@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 # Standard library
 import os
 import io
@@ -27,7 +24,7 @@ from mongo_pipeline_utils import (
     load_dataset_from_mongo,
     save_synthetic_dataset_to_mongo,
 )
-from model_utils import make_prompt
+from train_utils import make_prompt
 from training_pipeline import (
     iterative_training_and_generation,
     evaluate_multiple_generations,
