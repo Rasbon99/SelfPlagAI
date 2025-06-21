@@ -1,0 +1,24 @@
+{
+  "export_metadata": {
+    "base_model_name": "microsoft/Phi-3-mini-128k-instruct",
+    "base_dataset_dir": "squad_v2_05percent",
+    "start_generation": 0,
+    "end_generation": 5,
+    "total_generations": 6,
+    "successful_exports": 6,
+    "failed_exports": 0,
+    "export_timestamp": "timestamp_not_available"
+  },
+  "exported_files": {
+    "0": "predictions_export\\generation_0_predictions.json",
+    "1": "predictions_export\\generation_1_predictions.json",
+    "2": "predictions_export\\generation_2_predictions.json",
+    "3": "predictions_export\\generation_3_predictions.json",
+    "4": "predictions_export\\generation_4_predictions.json",
+    "5": "predictions_export\\generation_5_predictions.json"
+  },
+  "test_dataset_info": {
+    "size": 59,
+    "source": "squad_v2_05percent"
+  }
+}

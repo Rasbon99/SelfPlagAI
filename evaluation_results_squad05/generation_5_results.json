@@ -112,10 +112,10 @@
       0.0
     ]
   },
-  "generation": 3,
+  "generation": 5,
   "test_dataset_size": 11,
   "base_dataset_dir": "squad_v2_01percent",
   "base_model_name": "microsoft/Phi-3-mini-128k-instruct",
   "model_nick": "Phi",
-  "model_path": "./phi3-squad2-gen3-final"
+  "model_path": "./phi3-squad2-gen5-final"
 }

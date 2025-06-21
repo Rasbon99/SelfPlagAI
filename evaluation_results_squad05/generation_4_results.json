@@ -1,16 +1,16 @@
 {
   "test_size": 11,
   "exact_match": 0.18181818181818182,
-  "f1_score": 0.08943278943278943,
+  "f1_score": 0.0944832944832945,
   "bert_score_f1": 0.0,
-  "semantic_similarity": 0.053522062732589054,
+  "semantic_similarity": 0.05611946532999164,
   "avg_prediction_length": 25.90909090909091,
   "avg_reference_length": 2.3636363636363638,
   "predictions": [
     "12  Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-ren",
-    "Cilia use their bodies for locomotion.  Step-by-step justification: The context states that ctenophores are the largest non-colonial animals that use cilia as their main method of locom",
+    "Cilia use their bodies for locomotion.  Step-by-step justification: The context states that ctenophores, which are the largest non-colonial animals that use cilia as their main method of",
     "Babai and Luks  Given the context, answer the question.",
-    "Because it took a long time for mountains to erode and for sediments to form new rocks at the bottom of the sea, which in turn were raised up to become dry land.  Streams and rivers erode mountains and carry",
+    "Because it took a long time for mountains to erode and for sediments to form new rocks at the bottom of the sea, which in turn were raised up to become dry land.  Stream of consciousness: so the answer is",
     "Battle of Olustee  Given the context, answer the question.",
     "No.  Context refers to the process of sending packets in connectionless mode, where each packet includes complete addressing information. This ensures that each packet is routed individually, sometimes resulting in different paths and out-of-order",
     "Freeview   Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels",
@@ -76,7 +76,7 @@
       0,
       0,
       0.4615384615384615,
-      0,
+      0.05555555555555555,
       0.2,
       0,
       0,
@@ -102,7 +102,7 @@
       0.0,
       0.0,
       0.3,
-      0.0,
+      0.02857142857142857,
       0.1111111111111111,
       0.0,
       0.0,
@@ -112,10 +112,10 @@
       0.0
     ]
   },
-  "generation": 3,
+  "generation": 4,
   "test_dataset_size": 11,
   "base_dataset_dir": "squad_v2_01percent",
   "base_model_name": "microsoft/Phi-3-mini-128k-instruct",
   "model_nick": "Phi",
-  "model_path": "./phi3-squad2-gen3-final"
+  "model_path": "./phi3-squad2-gen4-final"
 }

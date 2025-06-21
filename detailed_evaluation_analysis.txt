@@ -4,11 +4,11 @@ DETAILED TEST SET EVALUATION ANALYSIS
 EVALUATION RESULTS SUMMARY
 ------------------------------------------------------------
 Test Set Size: 11
-Exact Match: 0.0000
-F1 Score: 0.0260
-BERTScore F1: 0.7999
-Semantic Similarity: 0.0152
-Avg Prediction Length: 20.64 words
+Exact Match: 0.1818
+F1 Score: 0.0894
+BERTScore F1: 0.0000
+Semantic Similarity: 0.0535
+Avg Prediction Length: 25.91 words
 Avg Reference Length: 2.36 words
 
 DETAILED PREDICTION EXAMPLES
@@ -18,130 +18,130 @@ DETAILED PREDICTION EXAMPLES
 BEST PREDICTIONS:
 --------------------------------------------------------------------------------
 
-Example 1 (Index 4):
-BERTScore F1: 0.8435
-Token F1: 0.2857
-Exact Match: ✗
-Question: After what battle did Union forces leave Jacksonville for good?
-Context: During the American Civil War, Jacksonville was a key supply point for hogs and cattle being shipped from Florida to aid the Confederate cause. The city was blockaded by Union forces, who gained contr...
-Reference Answer: No answer
-Model Prediction: Given the context, answer the question.
-Length: Pred=6 words, Ref=2 words
-Common words: 1
---------------------------------------------------
-
-Example 2 (Index 6):
-BERTScore F1: 0.8120
+Example 1 (Index 0):
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
-Question: What channel lost advertising revenue due to their plans?
-Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels would offer a range...
+Question: How many State of California University campuses are there?
+Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-renowned research universi...
 Reference Answer: No answer
-Model Prediction: Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels
+Model Prediction: 12  Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-ren
+Length: Pred=32 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 2 (Index 1):
+BERTScore F1: 0.0000
+Token F1: 0.0000
+Exact Match: ✗
+Question: What do cilia use their bodies for?
+Context: Ranging from about 1 millimeter (0.039 in) to 1.5 meters (4.9 ft) in size, ctenophores are the largest non-colonial animals that use cilia ("hairs") as their main method of locomotion. Most species ha...
+Reference Answer: No answer
+Model Prediction: Cilia use their bodies for locomotion.  Step-by-step justification: The context states that ctenophores are the largest non-colonial animals that use cilia as their main method of locom
 Length: Pred=27 words, Ref=2 words
 Common words: 0
 --------------------------------------------------
 
-Example 3 (Index 10):
-BERTScore F1: 0.8080
-Token F1: 0.0000
+Example 3 (Index 2):
+BERTScore F1: 0.0000
+Token F1: 0.4615
 Exact Match: ✗
-Question: Where is Fielding H. Garrison from?
-Context: Some modern scholars, such as Fielding H. Garrison, are of the opinion that the origin of the science of geology can be traced to Persia after the Muslim conquests had come to an end. Abu al-Rayhan al...
-Reference Answer: No answer
-Model Prediction: Context: The 1990s saw the emergence of a new generation of geologists, including the American geologist and author Mary Ainsworth (1946–200
-Length: Pred=21 words, Ref=2 words
-Common words: 0
+Question: Who are commonly associated with the algorithm typically considered the most effective with respect to finite polynomial hierarchy and graph isomorphism?
+Context: The graph isomorphism problem is the computational problem of determining whether two finite graphs are isomorphic. An important unsolved problem in complexity theory is whether the graph isomorphism ...
+Reference Answer: Laszlo Babai and Eugene Luks
+Model Prediction: Babai and Luks  Given the context, answer the question.
+Length: Pred=9 words, Ref=5 words
+Common words: 3
 --------------------------------------------------
 
 WORST PREDICTIONS:
 --------------------------------------------------------------------------------
 
-Example 1 (Index 3):
-BERTScore F1: 0.7892
+Example 1 (Index 8):
+BERTScore F1: 0.0000
+Token F1: 0.1000
+Exact Match: ✓
+Question: What did the Merwede-Oude Maas form with Waal and Lek?
+Context: Before the St. Elizabeth's flood (1421), the Meuse flowed just south of today's line Merwede-Oude Maas to the North Sea and formed an archipelago-like estuary with Waal and Lek. This system of numerou...
+Reference Answer: archipelago-like estuary
+Model Prediction: An archipelago-like estuary.  Context: Before the St. Elizabeth's flood (1421), the Meuse flowed just south of today's line Merwede-Oude
+Length: Pred=19 words, Ref=2 words
+Common words: 1
+--------------------------------------------------
+
+Example 2 (Index 9):
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
-Question: Why did the Royal Society think the Earth was older than previously thought?
-Context: James Hutton is often viewed as the first modern geologist. In 1785 he presented a paper entitled Theory of the Earth to the Royal Society of Edinburgh. In his paper, he explained his theory that the ...
+Question: Quantum theory was used to develop a new theory of what?
+Context: However, attempting to reconcile electromagnetic theory with two observations, the photoelectric effect, and the nonexistence of the ultraviolet catastrophe, proved troublesome. Through the work of le...
 Reference Answer: No answer
-Model Prediction: Streams and rivers erode mountains and carry
-Length: Pred=7 words, Ref=2 words
+Model Prediction: Electromagnetism  Context: The photoelectric effect, which is the emission of electrons from a metal surface when light is shone on it, was one of the observations that could not be explained by classical electromagnetism. In
+Length: Pred=35 words, Ref=2 words
 Common words: 0
 --------------------------------------------------
 
-Example 2 (Index 2):
-BERTScore F1: 0.7792
+Example 3 (Index 10):
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
-Question: Who are commonly associated with the algorithm typically considered the most effective with respect to finite polynomial hierarchy and graph isomorphism?
-Context: The graph isomorphism problem is the computational problem of determining whether two finite graphs are isomorphic. An important unsolved problem in complexity theory is whether the graph isomorphism ...
-Reference Answer: Laszlo Babai and Eugene Luks
-Model Prediction: Given the context, answer the question.
-Length: Pred=6 words, Ref=5 words
-Common words: 0
---------------------------------------------------
-
-Example 3 (Index 7):
-BERTScore F1: 0.7645
-Token F1: 0.0000
-Exact Match: ✗
-Question: How much windblown dust leaves the Sahara each year?
-Context: NASA's CALIPSO satellite has measured the amount of dust transported by wind from the Sahara to the Amazon: an average 182 million tons of dust are windblown out of the Sahara each year, at 15 degrees...
-Reference Answer: 182 million tons
-Model Prediction: Context: The 2014 FIFA World Cup was the 20th FIFA World Cup, a quadrennial international association football tournament contested by the men's national teams of
-Length: Pred=25 words, Ref=3 words
+Question: Where is Fielding H. Garrison from?
+Context: Some modern scholars, such as Fielding H. Garrison, are of the opinion that the origin of the science of geology can be traced to Persia after the Muslim conquests had come to an end. Abu al-Rayhan al...
+Reference Answer: No answer
+Model Prediction: New York, USA  Context: The 1990s saw the emergence of a new generation of geologists, including the American geologist and author Mary Ainsworth (1946–200
+Length: Pred=24 words, Ref=2 words
 Common words: 0
 --------------------------------------------------
 
 RANDOM PREDICTIONS:
 --------------------------------------------------------------------------------
 
-Example 1 (Index 0):
-BERTScore F1: 0.8010
-Token F1: 0.0000
-Exact Match: ✗
-Question: How many State of California University campuses are there?
-Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-renowned research universi...
-Reference Answer: No answer
-Model Prediction: Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-ren
-Length: Pred=31 words, Ref=2 words
-Common words: 0
---------------------------------------------------
-
-Example 2 (Index 10):
-BERTScore F1: 0.8080
-Token F1: 0.0000
-Exact Match: ✗
-Question: Where is Fielding H. Garrison from?
-Context: Some modern scholars, such as Fielding H. Garrison, are of the opinion that the origin of the science of geology can be traced to Persia after the Muslim conquests had come to an end. Abu al-Rayhan al...
-Reference Answer: No answer
-Model Prediction: Context: The 1990s saw the emergence of a new generation of geologists, including the American geologist and author Mary Ainsworth (1946–200
-Length: Pred=21 words, Ref=2 words
-Common words: 0
---------------------------------------------------
-
-Example 3 (Index 1):
-BERTScore F1: 0.7957
-Token F1: 0.0000
-Exact Match: ✗
-Question: What do cilia use their bodies for?
-Context: Ranging from about 1 millimeter (0.039 in) to 1.5 meters (4.9 ft) in size, ctenophores are the largest non-colonial animals that use cilia ("hairs") as their main method of locomotion. Most species ha...
-Reference Answer: No answer
-Model Prediction: Step-by-step justification: The context states that ctenophores are the largest non-colonial animals that use cilia as their main method of locom
-Length: Pred=21 words, Ref=2 words
-Common words: 0
---------------------------------------------------
-
-Example 4 (Index 3):
-BERTScore F1: 0.7892
+Example 1 (Index 3):
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: Why did the Royal Society think the Earth was older than previously thought?
 Context: James Hutton is often viewed as the first modern geologist. In 1785 he presented a paper entitled Theory of the Earth to the Royal Society of Edinburgh. In his paper, he explained his theory that the ...
 Reference Answer: No answer
-Model Prediction: Streams and rivers erode mountains and carry
-Length: Pred=7 words, Ref=2 words
+Model Prediction: Because it took a long time for mountains to erode and for sediments to form new rocks at the bottom of the sea, which in turn were raised up to become dry land.  Streams and rivers erode mountains and carry
+Length: Pred=40 words, Ref=2 words
 Common words: 0
+--------------------------------------------------
+
+Example 2 (Index 6):
+BERTScore F1: 0.0000
+Token F1: 0.0000
+Exact Match: ✗
+Question: What channel lost advertising revenue due to their plans?
+Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels would offer a range...
+Reference Answer: No answer
+Model Prediction: Freeview   Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels
+Length: Pred=28 words, Ref=2 words
+Common words: 0
+--------------------------------------------------
+
+Example 3 (Index 2):
+BERTScore F1: 0.0000
+Token F1: 0.4615
+Exact Match: ✗
+Question: Who are commonly associated with the algorithm typically considered the most effective with respect to finite polynomial hierarchy and graph isomorphism?
+Context: The graph isomorphism problem is the computational problem of determining whether two finite graphs are isomorphic. An important unsolved problem in complexity theory is whether the graph isomorphism ...
+Reference Answer: Laszlo Babai and Eugene Luks
+Model Prediction: Babai and Luks  Given the context, answer the question.
+Length: Pred=9 words, Ref=5 words
+Common words: 3
+--------------------------------------------------
+
+Example 4 (Index 7):
+BERTScore F1: 0.0000
+Token F1: 0.2222
+Exact Match: ✓
+Question: How much windblown dust leaves the Sahara each year?
+Context: NASA's CALIPSO satellite has measured the amount of dust transported by wind from the Sahara to the Amazon: an average 182 million tons of dust are windblown out of the Sahara each year, at 15 degrees...
+Reference Answer: 182 million tons
+Model Prediction: 182 million tons  Context: The 2014 FIFA World Cup was the 20th FIFA World Cup, a quadrennial international association football tournament contested by the men's national teams of
+Length: Pred=28 words, Ref=3 words
+Common words: 3
 --------------------------------------------------
 
 
@@ -149,101 +149,101 @@ FULL PREDICTIONS LIST
 ================================================================================
 
 Example 1:
-BERTScore F1: 0.8010
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: How many State of California University campuses are there?
 Reference: No answer
-Prediction: Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-ren
+Prediction: 12  Context: The Tech Coast is a moniker that has gained use as a descriptor for the region's diversified technology and industrial base as well as its multitude of prestigious and world-ren
 --------------------------------------------------
 
 Example 2:
-BERTScore F1: 0.7957
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: What do cilia use their bodies for?
 Reference: No answer
-Prediction: Step-by-step justification: The context states that ctenophores are the largest non-colonial animals that use cilia as their main method of locom
+Prediction: Cilia use their bodies for locomotion.  Step-by-step justification: The context states that ctenophores are the largest non-colonial animals that use cilia as their main method of locom
 --------------------------------------------------
 
 Example 3:
-BERTScore F1: 0.7792
-Token F1: 0.0000
+BERTScore F1: 0.0000
+Token F1: 0.4615
 Exact Match: ✗
 Question: Who are commonly associated with the algorithm typically considered the most effective with respect to finite polynomial hierarchy and graph isomorphism?
 Reference: Laszlo Babai and Eugene Luks
-Prediction: Given the context, answer the question.
+Prediction: Babai and Luks  Given the context, answer the question.
 --------------------------------------------------
 
 Example 4:
-BERTScore F1: 0.7892
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: Why did the Royal Society think the Earth was older than previously thought?
 Reference: No answer
-Prediction: Streams and rivers erode mountains and carry
+Prediction: Because it took a long time for mountains to erode and for sediments to form new rocks at the bottom of the sea, which in turn were raised up to become dry land.  Streams and rivers erode mountains and carry
 --------------------------------------------------
 
 Example 5:
-BERTScore F1: 0.8435
-Token F1: 0.2857
+BERTScore F1: 0.0000
+Token F1: 0.2000
 Exact Match: ✗
 Question: After what battle did Union forces leave Jacksonville for good?
 Reference: No answer
-Prediction: Given the context, answer the question.
+Prediction: Battle of Olustee  Given the context, answer the question.
 --------------------------------------------------
 
 Example 6:
-BERTScore F1: 0.7968
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: Can a packet ever be sent to the wrong number?
 Reference: No answer
-Prediction: Context refers to the process of sending packets in connectionless mode, where each packet includes complete addressing information. This ensures that each packet is routed individually, sometimes resulting in different paths and out-of-order
+Prediction: No.  Context refers to the process of sending packets in connectionless mode, where each packet includes complete addressing information. This ensures that each packet is routed individually, sometimes resulting in different paths and out-of-order
 --------------------------------------------------
 
 Example 7:
-BERTScore F1: 0.8120
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: What channel lost advertising revenue due to their plans?
 Reference: No answer
-Prediction: Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels
+Prediction: Freeview   Context: On 8 February 2007, BSkyB announced its intention to replace its three free-to-air digital terrestrial channels with four subscription channels. It was proposed that these channels
 --------------------------------------------------
 
 Example 8:
-BERTScore F1: 0.7645
-Token F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.0000
+Token F1: 0.2222
+Exact Match: ✓
 Question: How much windblown dust leaves the Sahara each year?
 Reference: 182 million tons
-Prediction: Context: The 2014 FIFA World Cup was the 20th FIFA World Cup, a quadrennial international association football tournament contested by the men's national teams of
+Prediction: 182 million tons  Context: The 2014 FIFA World Cup was the 20th FIFA World Cup, a quadrennial international association football tournament contested by the men's national teams of
 --------------------------------------------------
 
 Example 9:
-BERTScore F1: 0.8027
-Token F1: 0.0000
-Exact Match: ✗
+BERTScore F1: 0.0000
+Token F1: 0.1000
+Exact Match: ✓
 Question: What did the Merwede-Oude Maas form with Waal and Lek?
 Reference: archipelago-like estuary
-Prediction: Context: Before the St. Elizabeth's flood (1421), the Meuse flowed just south of today's line Merwede-Oude
+Prediction: An archipelago-like estuary.  Context: Before the St. Elizabeth's flood (1421), the Meuse flowed just south of today's line Merwede-Oude
 --------------------------------------------------
 
 Example 10:
-BERTScore F1: 0.8065
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: Quantum theory was used to develop a new theory of what?
 Reference: No answer
-Prediction: Context: The photoelectric effect, which is the emission of electrons from a metal surface when light is shone on it, was one of the observations that could not be explained by classical electromagnetism. In
+Prediction: Electromagnetism  Context: The photoelectric effect, which is the emission of electrons from a metal surface when light is shone on it, was one of the observations that could not be explained by classical electromagnetism. In
 --------------------------------------------------
 
 Example 11:
-BERTScore F1: 0.8080
+BERTScore F1: 0.0000
 Token F1: 0.0000
 Exact Match: ✗
 Question: Where is Fielding H. Garrison from?
 Reference: No answer
-Prediction: Context: The 1990s saw the emergence of a new generation of geologists, including the American geologist and author Mary Ainsworth (1946–200
+Prediction: New York, USA  Context: The 1990s saw the emergence of a new generation of geologists, including the American geologist and author Mary Ainsworth (1946–200
 --------------------------------------------------
 

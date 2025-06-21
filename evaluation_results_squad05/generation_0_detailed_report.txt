@@ -3,7 +3,7 @@ DETAILED EVALUATION REPORT - GENERATION 0
 
 📊 Generation 0 Evaluation Results:
    Exact Match: 0.273
-   F1 Score: 0.123
-   BERTScore F1: 0.843
-   Semantic Similarity: 0.075
+   F1 Score: 0.106
+   BERTScore F1: 0.000
+   Semantic Similarity: 0.066
 
