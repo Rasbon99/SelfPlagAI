@@ -1,147 +1,171 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # Standard library
-import json
 import os
+import io
 import argparse
+import logging
+import warnings
 
-# Third-party libraries - data processing
+# Third‑party libraries — data processing & environment
+import torch
 import pandas as pd
-from datasets import load_dataset
+from dotenv import load_dotenv
+from huggingface_hub import login
+from datasets import DatasetDict
 
-# Third-party libraries - transformers and related
-from transformers import (
-    Accelerator,
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    BitsAndBytesConfig,
-    LoraConfig,
-    TrainingArguments,
-    get_peft_model,
+# Local modules — database & pipeline utilities
+from db_utils import (
+    get_mongo_client,
+    read_collection,
+    insert_dataframe_to_mongo,
+    drop_collection,
 )
-
-# Local project modules
-from utils import (
-    evaluate_test_set_with_examples,
-    generate_dataset_from_model,
-    make_prompt,
-    train_model,
-    tokenize,
+from mongo_pipeline_utils import (
+    read_original_and_create_subset,
+    load_dataset_from_mongo,
+    save_synthetic_dataset_to_mongo,
+)
+from model_utils import make_prompt
+from training_pipeline import (
+    iterative_training_and_generation,
+    evaluate_multiple_generations,
+    export_all_generations_predictions,
 )
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Recursive fine-tuning and degradation tracking for Phi-3 model"
+        description="End‑to‑end recursive fine‑tuning via MongoDB"
     )
-    parser.add_argument(
-        "--n_iterations", type=int, default=5,
-        help="Number of recursive fine-tuning iterations"
-    )
-    parser.add_argument(
-        "--output_dir", type=str, default="./runs",
-        help="Base directory for storing run outputs"
-    )
+    parser.add_argument("--hf-model", type=str, required=True,
+                        help="HuggingFace model (e.g. microsoft/phi-3-mini-128k-instruct)")
+    parser.add_argument("--num-generations", type=int, default=5,
+                        help="Number of synthetic generations to perform")
+    parser.add_argument("--sample-frac", type=float, default=0.005,
+                        help="Fraction of original SQuAD train to sample (e.g. 0.005 → 0.5%)")
+    parser.add_argument("--db", type=str, default="squadv2",
+                        help="MongoDB database name")
+    parser.add_argument("--orig-train-coll", type=str, default="squadv2_original_train",
+                        help="Original full SQuAD v2 train collection")
+    parser.add_argument("--test-coll", type=str, default="squadv2_original_test",
+                        help="Original full SQuAD v2 test collection")
+    parser.add_argument("--subset-coll", type=str, default="squad_subset_0_5pct",
+                        help="Collection for the sampled subset")
+    parser.add_argument("--synthetic-coll", type=str, default="squad_synthetic_train",
+                        help="Collection for synthetic train generations")
+    parser.add_argument("--metadata-coll", type=str, default="synthetic_metadata",
+                        help="Collection for synthetic metadata")
     return parser.parse_args()
 
-
-def prepare_initial_dataset():
-    raw = load_dataset("squad_v2")
-    return raw['train'], raw['validation']
-
-
-def main(current_model_path="microsoft/phi-3-mini-128k-instruct"):
+def main():
     args = parse_args()
-    os.makedirs(args.output_dir, exist_ok=True)
-    
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        llm_int8_enable_fp32_cpu_offload=True
+
+    # 1) Load credentials and connect to MongoDB
+    load_dotenv("key.env")
+    client = get_mongo_client(
+        username=os.getenv("USERNAME"),
+        password=os.getenv("PASSWORD")
     )
-    peft_cfg = LoraConfig(**{
-        "r": 8,
-        "lora_alpha": 16,
-        "lora_dropout": 0.1,
-        "bias": "none",
-        "task_type": "CAUSAL_LM",
-        "target_modules": "all-linear"
-    })
 
-    tokenizer = AutoTokenizer.from_pretrained(current_model_path)
-    tokenizer.pad_token = tokenizer.eos_token
+    # 2) Sample a small subset from the original train and store in Mongo
+    print("▶ Creating initial subset in MongoDB...")
+    read_original_and_create_subset(
+        client=client,
+        original_coll=args.orig_train_coll,
+        subset_coll=args.subset_coll,
+        db_name=args.db,
+        sample_frac=args.sample_frac,
+        random_state=42
+    )
 
-    train_dataset, test_dataset = prepare_initial_dataset()
-    formatted_test = test_dataset.map(make_prompt)
+    # 3) Login to HF Hub & silence noisy logs
+    hf_token = os.getenv("HUGGINGFACE_TOKEN")
+    login(token=hf_token)
+    logging.getLogger("transformers").setLevel(logging.CRITICAL)
+    logging.getLogger("accelerate").setLevel(logging.CRITICAL)
+    warnings.filterwarnings("ignore")
+    torch.cuda.empty_cache()
 
-    formatted_train = train_dataset.map(make_prompt)
-    tokenized_train = formatted_train.map(lambda x: tokenize(x, tokenizer), batched=True)
-    
-    all_metrics = []
+    # 4) Initialize BERTScore silently
+    print("▶ Initializing BERTScore...")
+    with io.StringIO(), io.StringIO():
+        from bert_score import score
+        _ = score(["test"], ["test"], lang="en", verbose=False)
+    print("BERTScore ready ✅\n")
 
-    for i in range(1, args.n_iterations + 1):
-        print(f"\n=== Iteration {i}/{args.n_iterations} ===")
-        run_dir = os.path.join(args.output_dir, f"run_{i}")
-        os.makedirs(run_dir, exist_ok=True)
+    # 5) Iterative training & synthetic generation
+    current_train_coll = args.subset_coll
+    for gen in range(1, args.num_generations + 1):
+        print(f"=== Generation {gen} ===")
 
-        # Definisco train_args dentro il ciclo per salvare ogni iterazione separatamente
-        train_args = TrainingArguments(
-            output_dir=run_dir,
-            per_device_train_batch_size=8,
-            num_train_epochs=1,
-            logging_steps=10,
-            save_strategy="no",
-            evaluation_strategy="no",
-            learning_rate=1e-4,
-            weight_decay=0.01,
-            warmup_steps=100,
-            save_total_limit=1,
-            fp16=True,
-            report_to=[]
+        # 5.1) Load train + test from Mongo into HF DatasetDict
+        ds = load_dataset_from_mongo(
+            client=client,
+            train_coll=current_train_coll,
+            test_coll=args.test_coll,
+            db_name=args.db,
+            projection={"_id": 0}
         )
 
-        print("Loading model and applying LoRA...")
-        model = AutoModelForCausalLM.from_pretrained(
-            current_model_path,
-            device_map="auto",
-            quantization_config=bnb_config
-        )
-        model = get_peft_model(model, peft_cfg)
-
-        print("Starting fine-tuning on training dataset...")
-        trainer = train_model(model, tokenized_train, tokenizer, train_args)
-
-        print("Evaluating on fixed test dataset...")
-        eval_res = evaluate_test_set_with_examples(
-            model, tokenizer,
-            {"test": formatted_test},
-            make_prompt,
-            num_examples=len(formatted_test)
-        )
-        print(f"Iteration {i} BERT F1: {eval_res['bert_score']['f1']:.4f}, Exact Match: {eval_res['exact_match']:.4f}")
-
-        all_metrics.append({
-            "iteration": i,
-            "bert_f1": eval_res["bert_score"]["f1"],
-            "exact_match": eval_res["exact_match"]
+        # 5.2) Format prompts
+        print("Formatting prompts...")
+        formatted = DatasetDict({
+            split: ds[split].map(make_prompt)
+            for split in ds
         })
 
-        print(f"Saving model checkpoint to {run_dir} ...")
-        trainer.save_model(run_dir)
-        current_model_path = run_dir
+        # 5.3) Fine‑tune & generate synthetic train
+        synthetic_ds = iterative_training_and_generation(
+            train_dataset=formatted["train"],
+            model_name_or_path=args.hf_model,
+            generation_num=gen,
+            device="cuda" if torch.cuda.is_available() else "cpu"
+        )
 
-        print("Generating new synthetic training dataset from current model...")
-        new_train_dataset = generate_dataset_from_model(model, tokenizer, train_dataset)
+        # 5.4) Save new synthetic train + metadata into Mongo
+        print("Saving synthetic train and metadata to MongoDB...")
+        save_synthetic_dataset_to_mongo(
+            client=client,
+            synthetic_dataset=synthetic_ds,
+            gen_number=gen,
+            train_coll=args.synthetic_coll,
+            metadata_coll=args.metadata_coll,
+            db_name=args.db
+        )
 
-        formatted_train = new_train_dataset.map(make_prompt)
-        tokenized_train = formatted_train.map(lambda x: tokenize(x, tokenizer), batched=True)
+        current_train_coll = args.synthetic_coll
+        print()
 
-    metrics_path = os.path.join(args.output_dir, "degradation_metrics.json")
-    with open(metrics_path, 'w') as f:
-        json.dump(all_metrics, f, indent=2)
-    print(f"\n📁 Saved degradation metrics to {metrics_path}")
+    # 6) Evaluation of all generations
+    print("▶ Evaluating all generations...")
+    evaluate_multiple_generations(
+        base_model_name=args.hf_model,
+        num_generations=args.num_generations,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+        mongo_client=client,
+        db_name=args.db,
+        test_coll=args.test_coll,
+        synthetic_coll=args.synthetic_coll,
+        save_results=True,
+        results_dir="evaluation_results_squad05"
+    )
 
-    df_metrics = pd.DataFrame(all_metrics)
-    csv_path = os.path.join(args.output_dir, "degradation_metrics.csv")
-    df_metrics.to_csv(csv_path, index=False)
-    print(f"📄 Saved degradation metrics CSV to {csv_path}")
+    # 7) Export all predictions
+    print("▶ Exporting predictions...")
+    export_all_generations_predictions(
+        base_model_name=args.hf_model,
+        mongo_client=client,
+        db_name=args.db,
+        test_coll=args.test_coll,
+        start_generation=1,
+        end_generation=args.num_generations,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+        output_dir="predictions_export"
+    )
 
+    client.close()
+    print("\n✅ All done.")
 
 if __name__ == "__main__":
     main()
