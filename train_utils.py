@@ -1,27 +1,34 @@
-# Standard library
+# --- Standard Library ---
 import io
 import json
-import random
-import sys
 import os
-import shutil
+import random
 import re
+import shutil
+import sys
 
-# Third‑party libraries — environment
-from transformers import AutoModelForCausalLM, AutoTokenizer, Accelerator, BitsAndBytesConfig, TrainingArguments
+# --- Third-party Libraries: Deep Learning & Transformers ---
+import torch
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    Accelerator,
+    BitsAndBytesConfig,
+    TrainingArguments,
+    DataCollatorForLanguageModeling,
+    Trainer,
+    TrainerCallback,
+)
 from peft import LoraConfig, get_peft_model
+from bert_score import score
 
-# Third‑party libraries — data processing
+# --- Third-party Libraries: Data Processing & Utilities ---
 import numpy as np
+import pandas as pd
 from datasets import Dataset, DatasetDict
 from tqdm import tqdm
-import pandas as pd
 
-# Third‑party libraries — deep learning / Transformers
-import torch
-from bert_score import score
-from transformers import DataCollatorForLanguageModeling, Trainer, TrainerCallback
-
+# --- Project-specific Utilities ---
 from db_utils import read_collection, drop_collection, insert_dataframe_to_mongo
 
 def read_original_and_create_subset(

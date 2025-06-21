@@ -1,5 +1,9 @@
-import pymongo
+# --- Standard Library ---
 from urllib.parse import quote_plus
+
+# --- Third-party Libraries: Database ---
+import pymongo
+
 
 def get_mongo_client(username: str, password: str, cluster: str = "x4cluster.n6xsnhl.mongodb.net") -> pymongo.MongoClient:
     """
