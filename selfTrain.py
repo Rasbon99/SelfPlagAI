@@ -44,15 +44,27 @@ def parse_args():
                         help="Collection for synthetic train generations")
     parser.add_argument("--metadata-coll", type=str, default="synthetic_metadata",
                         help="Collection for synthetic metadata")
+    parser.add_argument("--predictions-coll-prefix", type=str, default="predictions_gen",
+                        help="Prefix for MongoDB collections to store exported predictions")
     return parser.parse_args()
 
 def main():
     args = parse_args()
     load_dotenv("key.env")
-    client = get_mongo_client(
-        username=os.getenv("USERNAME"),
-        password=os.getenv("PASSWORD")
-    )
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+    if not username or not password:
+        print("❌ USERNAME or PASSWORD not found in .env file.")
+        return
+
+    try:
+        client = get_mongo_client(username, password)
+        client.admin.command("ping")
+        print("✅ Connected to MongoDB")
+    except Exception as e:
+        print(f"❌ MongoDB connection failed: {e}")
+        return
 
     print("▶ Creating initial subset in MongoDB...")
     read_original_and_create_subset(
@@ -80,7 +92,6 @@ def main():
     for gen in range(1, args.num_generations + 1):
         print(f"=== Generation {gen} ===")
 
-        # Iterative training & synthetic generation (internamente gestisce i dati)
         synthetic_ds = iterative_training_and_generation(
             client=client,
             args=args,
@@ -100,7 +111,7 @@ def main():
             db_name=args.db
         )
 
-        current_train_coll = args.synthetic_coll  # se vuoi gestire meglio le generazioni cambia qui
+        current_train_coll = args.synthetic_coll  # aggiorna se serve
 
         print()
 
@@ -128,7 +139,8 @@ def main():
         start_generation=1,
         end_generation=args.num_generations,
         device="cuda" if torch.cuda.is_available() else "cpu",
-        output_dir="predictions_export"
+        output_dir="predictions_export",
+        mongo_collection_prefix=args.predictions_coll_prefix
     )
 
     client.close()

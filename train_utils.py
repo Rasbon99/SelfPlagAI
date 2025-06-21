@@ -1357,128 +1357,115 @@ def evaluate_multiple_generations(
 '''
 EXPORT PREDICTIONS
 '''
-def export_predictions_to_json(model, tokenizer, test_dataset, generation_num, device, output_dir="predictions_export_squad05"):
+def export_predictions_to_json(
+    model,
+    tokenizer,
+    test_dataset,
+    generation_num,
+    device,
+    output_dir="predictions_export_squad05",
+    mongo_client=None,
+    mongo_db_name="squadv2",
+    mongo_collection_prefix="predictions_gen"
+):
     """
-    Export all questions, model predictions, and reference answers to a JSON file.
-    
+    Export model predictions to both JSON file and MongoDB collection.
+
     Args:
-        model: The loaded model for generating predictions
-        tokenizer: The tokenizer for the model
-        test_dataset: The test dataset containing questions and reference answers
-        generation_num: Generation number (0 for base model)
-        device: Device for inference
-        output_dir: Directory to save the JSON file
-        
+        model: HuggingFace model
+        tokenizer: Tokenizer
+        test_dataset: Dataset containing context/question/reference
+        generation_num: Which generation is being exported
+        device: 'cuda' or 'cpu'
+        output_dir: Folder to save JSON file
+        mongo_client: pymongo.MongoClient, if None skip MongoDB export
+        mongo_db_name: Name of MongoDB database
+        mongo_collection_prefix: Prefix for MongoDB collection name
+
     Returns:
-        str: Path to the saved JSON file
+        str: Path to JSON file
     """
-    
-    # Create output directory
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Prepare test data using make_prompt function
+
     test_prompts = test_dataset.map(make_prompt)
-    
-    # Set model to evaluation mode
     model.eval()
-    
-    # Initialize results list
     results = []
-    
+
     print(f"🔍 Generating predictions for Generation {generation_num}...")
-    
-    # Generate predictions with progress bar
+
     for idx, example in enumerate(tqdm(test_prompts, desc=f"📝 Gen {generation_num} - Processing", leave=False)):
-        # Get prompt without answer (remove answer part from make_prompt output)
         full_prompt = example["prompt"]
-        if '[/INST]' in full_prompt:
-            prompt_without_answer = full_prompt.split('[/INST]')[0] + '[/INST] Answer:'
-        else:
-            prompt_without_answer = full_prompt
-        
-        # Tokenize input
-        inputs = tokenizer(
-            prompt_without_answer,
-            return_tensors="pt",
-            truncation=True,
-            padding="max_length",
-            max_length=512
-        ).to(device)
-        
-        # Generate response
+        prompt_without_answer = full_prompt.split('[/INST]')[0] + '[/INST] Answer:' if '[/INST]' in full_prompt else full_prompt
+
+        inputs = tokenizer(prompt_without_answer, return_tensors="pt", truncation=True, padding="max_length", max_length=512).to(device)
+
         with torch.no_grad():
             output = model.generate(
-                **inputs, 
+                **inputs,
                 max_new_tokens=50,
                 do_sample=False,
                 pad_token_id=tokenizer.eos_token_id
             )
-        
-        # Decode output
+
         decoded = tokenizer.decode(output[0], skip_special_tokens=True)
-        
-        # Extract answer - look for content after [/INST] or after "Answer:" if present
+
         if '[/INST]' in decoded:
             answer_part = decoded.split('[/INST]')[-1].strip()
-            
-            # If there's an "Answer:" pattern in the generated text, extract after it
-            if "Answer:" in answer_part:
-                prediction = answer_part.split("Answer:")[-1].strip()
-            else:
-                prediction = answer_part
+            prediction = answer_part.split("Answer:")[-1].strip() if "Answer:" in answer_part else answer_part
+        elif "Answer:" in decoded:
+            prediction = decoded.split("Answer:")[-1].strip()
         else:
-            # Fallback: look for "Answer:" pattern in the entire decoded text
-            if "Answer:" in decoded:
-                prediction = decoded.split("Answer:")[-1].strip()
-            else:
-                prediction = decoded.strip()
-        
-        # Clean up prediction - remove any trailing instruction markers or unwanted text
-        prediction = prediction.split('\n')[0].strip()  # Take only first line to avoid multi-line responses
-        
-        # Extract context and question from the original example
-        context = example.get("context", "")
-        question = example.get("question", "")
-        reference = example.get("reference", "")
-        
-        # Create result entry
+            prediction = decoded.strip()
+
+        prediction = prediction.split('\n')[0].strip()
+
         result_entry = {
             "id": idx,
-            "context": context,
-            "question": question,
-            "reference_answer": reference,
+            "context": example.get("context", ""),
+            "question": example.get("question", ""),
+            "reference_answer": example.get("reference", ""),
             "model_prediction": prediction,
             "generation": generation_num,
             "full_prompt": full_prompt,
             "raw_model_output": decoded
         }
-        
+
         results.append(result_entry)
-    
-    # Save to JSON file
+
+    # Save to JSON
     json_filename = f"generation_{generation_num}_predictions.json"
     json_filepath = os.path.join(output_dir, json_filename)
-    
-    # Create metadata
+
     metadata = {
         "generation": generation_num,
         "total_examples": len(results),
         "model_type": "base_model" if generation_num == 0 else "fine_tuned",
-        "export_timestamp": str(pd.Timestamp.now()) if 'pd' in globals() else "timestamp_not_available",
-        "description": f"Predictions from generation {generation_num} model on test dataset"
+        "export_timestamp": str(pd.Timestamp.now()),
+        "description": f"Predictions from generation {generation_num}"
     }
-    
-    # Final JSON structure
+
     final_json = {
         "metadata": metadata,
         "predictions": results
     }
-    
-    # Save to file
+
     with open(json_filepath, 'w', encoding='utf-8') as f:
         json.dump(final_json, f, indent=2, ensure_ascii=False)
-    
+
     print(f"✅ Exported {len(results)} predictions to: {json_filepath}")
+
+    # Export to MongoDB
+    if mongo_client:
+        df = pd.DataFrame(results)
+        mongo_collection_name = f"{mongo_collection_prefix}{generation_num}"
+        insert_dataframe_to_mongo(
+            client=mongo_client,
+            dataframe=df,
+            collection_name=mongo_collection_name,
+            db_name=mongo_db_name
+        )
+        print(f"✅ Predictions also saved to MongoDB: {mongo_db_name}.{mongo_collection_name}")
+
     return json_filepath
 
 def export_all_generations_predictions(
@@ -1489,12 +1476,12 @@ def export_all_generations_predictions(
     start_generation=0,
     end_generation=5,
     device="cuda" if torch.cuda.is_available() else "cpu",
-    output_dir="predictions_export_squad05"
+    output_dir="predictions_export_squad05",
+    mongo_collection_prefix="predictions_gen"
 ):
     import os
     import torch
     import json
-    import numpy as np
     import pandas as pd
     from tqdm import tqdm
     from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -1502,14 +1489,17 @@ def export_all_generations_predictions(
 
     os.makedirs(output_dir, exist_ok=True)
 
+    # Configurazione per quantizzazione (solo base model)
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         llm_int8_enable_fp32_cpu_offload=True
     )
 
+    # Tokenizer base
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     tokenizer.pad_token = tokenizer.eos_token
 
+    # Caricamento test set
     ds = load_dataset_from_mongo(
         client=mongo_client,
         train_coll="unused",
@@ -1551,6 +1541,7 @@ def export_all_generations_predictions(
                     model_path = f"./phi3-squad2-gen{generation_num}-final"
                     if not os.path.exists(model_path):
                         print(f"❌ Model for generation {generation_num} not found at {model_path}")
+                        exported_files[generation_num] = f"ERROR: Model not found at {model_path}"
                         continue
                     offload_cache_dir = "./offload_cache"
                     os.makedirs(offload_cache_dir, exist_ok=True)
@@ -1569,18 +1560,20 @@ def export_all_generations_predictions(
                 test_dataset=test_dataset,
                 generation_num=generation_num,
                 device=device,
-                output_dir=output_dir
+                output_dir=output_dir,
+                mongo_client=mongo_client,
+                mongo_db_name=db_name,
+                mongo_collection_prefix=mongo_collection_prefix
             )
             exported_files[generation_num] = json_filepath
 
             generation_progress.set_postfix({
-                'Exported': f"{len(exported_files)}/{end_generation - start_generation + 1}",
+                'Exported': f"{len([f for f in exported_files.values() if not isinstance(f, str) or not f.startswith('ERROR:')])}/{end_generation - start_generation + 1}",
                 'Current': f"Gen {generation_num}"
             })
 
             del model
             torch.cuda.empty_cache()
-
             print(f"✅ Generation {generation_num} export completed!")
 
         except Exception as e:
@@ -1597,9 +1590,9 @@ def export_all_generations_predictions(
             "start_generation": start_generation,
             "end_generation": end_generation,
             "total_generations": end_generation - start_generation + 1,
-            "successful_exports": len([f for f in exported_files.values() if not (isinstance(f, str) and f.startswith("ERROR:"))]),
+            "successful_exports": len([f for f in exported_files.values() if not isinstance(f, str) or not f.startswith("ERROR:")]),
             "failed_exports": len([f for f in exported_files.values() if isinstance(f, str) and f.startswith("ERROR:")]),
-            "export_timestamp": str(pd.Timestamp.now()) if 'pd' in globals() else "timestamp_not_available"
+            "export_timestamp": str(pd.Timestamp.now())
         },
         "exported_files": exported_files,
         "test_dataset_info": {
@@ -1607,6 +1600,7 @@ def export_all_generations_predictions(
             "source": f"{db_name}.{test_coll}"
         }
     }
+
     with open(summary_file, 'w', encoding='utf-8') as f:
         json.dump(summary_data, f, indent=2, ensure_ascii=False)
 
@@ -1614,21 +1608,16 @@ def export_all_generations_predictions(
     print("EXPORT SUMMARY")
     print(f"{'='*80}")
 
-    successful_exports = 0
-    failed_exports = 0
-
     for gen_num, filepath in exported_files.items():
         if isinstance(filepath, str) and filepath.startswith("ERROR:"):
             print(f"❌ Generation {gen_num}: {filepath}")
-            failed_exports += 1
         else:
             print(f"✅ Generation {gen_num}: {filepath}")
-            successful_exports += 1
 
     print(f"\n📊 Export Statistics:")
     print(f"   Total generations: {end_generation - start_generation + 1}")
-    print(f"   Successful exports: {successful_exports}")
-    print(f"   Failed exports: {failed_exports}")
+    print(f"   Successful exports: {summary_data['export_metadata']['successful_exports']}")
+    print(f"   Failed exports: {summary_data['export_metadata']['failed_exports']}")
     print(f"   Test examples per file: {len(test_dataset)}")
     print(f"\n💾 Summary saved to: {summary_file}")
     print(f"📁 All files saved in: {output_dir}")
