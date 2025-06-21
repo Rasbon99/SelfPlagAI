@@ -1,31 +1,22 @@
 # Standard library
 import os
-import io
 import argparse
 import logging
 import warnings
 
 # Third‑party libraries — data processing & environment
 import torch
-import pandas as pd
 from dotenv import load_dotenv
 from huggingface_hub import login
-from datasets import DatasetDict
 
 # Local modules — database & pipeline utilities
 from db_utils import (
     get_mongo_client,
-    read_collection,
-    insert_dataframe_to_mongo,
-    drop_collection,
-)
-from mongo_pipeline_utils import (
     read_original_and_create_subset,
-    load_dataset_from_mongo,
     save_synthetic_dataset_to_mongo,
 )
-from train_utils import make_prompt
-from training_pipeline import (
+
+from train_utils import (
     iterative_training_and_generation,
     evaluate_multiple_generations,
     export_all_generations_predictions,
@@ -33,7 +24,7 @@ from training_pipeline import (
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="End‑to‑end recursive fine‑tuning via MongoDB"
+        description="End-to-end recursive fine-tuning via MongoDB"
     )
     parser.add_argument("--hf-model", type=str, required=True,
                         help="HuggingFace model (e.g. microsoft/phi-3-mini-128k-instruct)")
@@ -57,15 +48,12 @@ def parse_args():
 
 def main():
     args = parse_args()
-
-    # 1) Load credentials and connect to MongoDB
     load_dotenv("key.env")
     client = get_mongo_client(
         username=os.getenv("USERNAME"),
         password=os.getenv("PASSWORD")
     )
 
-    # 2) Sample a small subset from the original train and store in Mongo
     print("▶ Creating initial subset in MongoDB...")
     read_original_and_create_subset(
         client=client,
@@ -76,51 +64,32 @@ def main():
         random_state=42
     )
 
-    # 3) Login to HF Hub & silence noisy logs
     hf_token = os.getenv("HUGGINGFACE_TOKEN")
     login(token=hf_token)
     logging.getLogger("transformers").setLevel(logging.CRITICAL)
     logging.getLogger("accelerate").setLevel(logging.CRITICAL)
     warnings.filterwarnings("ignore")
-    torch.cuda.empty_cache()
 
-    # 4) Initialize BERTScore silently
     print("▶ Initializing BERTScore...")
-    with io.StringIO(), io.StringIO():
-        from bert_score import score
-        _ = score(["test"], ["test"], lang="en", verbose=False)
+    from bert_score import score
+    _ = score(["test"], ["test"], lang="en", verbose=False)
     print("BERTScore ready ✅\n")
 
-    # 5) Iterative training & synthetic generation
     current_train_coll = args.subset_coll
+
     for gen in range(1, args.num_generations + 1):
         print(f"=== Generation {gen} ===")
 
-        # 5.1) Load train + test from Mongo into HF DatasetDict
-        ds = load_dataset_from_mongo(
-            client=client,
-            train_coll=current_train_coll,
-            test_coll=args.test_coll,
-            db_name=args.db,
-            projection={"_id": 0}
-        )
-
-        # 5.2) Format prompts
-        print("Formatting prompts...")
-        formatted = DatasetDict({
-            split: ds[split].map(make_prompt)
-            for split in ds
-        })
-
-        # 5.3) Fine‑tune & generate synthetic train
+        # Iterative training & synthetic generation (internamente gestisce i dati)
         synthetic_ds = iterative_training_and_generation(
-            train_dataset=formatted["train"],
-            model_name_or_path=args.hf_model,
-            generation_num=gen,
+            client=client,
+            args=args,
+            base_model_name=args.hf_model,
+            start_generation=gen,
+            num_generations=1,
             device="cuda" if torch.cuda.is_available() else "cpu"
         )
 
-        # 5.4) Save new synthetic train + metadata into Mongo
         print("Saving synthetic train and metadata to MongoDB...")
         save_synthetic_dataset_to_mongo(
             client=client,
@@ -131,13 +100,15 @@ def main():
             db_name=args.db
         )
 
-        current_train_coll = args.synthetic_coll
+        current_train_coll = args.synthetic_coll  # se vuoi gestire meglio le generazioni cambia qui
+
         print()
 
-    # 6) Evaluation of all generations
     print("▶ Evaluating all generations...")
     evaluate_multiple_generations(
+        args=args,
         base_model_name=args.hf_model,
+        start_generation=1,
         num_generations=args.num_generations,
         device="cuda" if torch.cuda.is_available() else "cpu",
         mongo_client=client,
@@ -148,7 +119,6 @@ def main():
         results_dir="evaluation_results_squad05"
     )
 
-    # 7) Export all predictions
     print("▶ Exporting predictions...")
     export_all_generations_predictions(
         base_model_name=args.hf_model,
