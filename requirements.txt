@@ -1,7 +1,5 @@
 # PyTorch with CUDA 12.1 (best for RTX 4090)
 torch==2.2.2+cu121
-torchvision==0.17.2+cu121
-torchaudio==2.2.2+cu121
 --extra-index-url https://download.pytorch.org/whl/cu121
 
 # MongoDB client
@@ -21,14 +19,10 @@ ipykernel
 # Progress bar utility
 tqdm
 
-# Mistral tokenizer and protocol support
-mistral-common
-
 # Key loading
 python-dotenv
 ipywidgets
 
 # Data processing and manipulation
 pandas
-numpy<2  # Pin to NumPy 1.x for compatibility with PyTorch 2.2.2
-scikit-learn
+numpy
