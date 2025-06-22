@@ -613,6 +613,15 @@ def extract_model_nick(model_path):
 ITERATIVE TRAINING
 '''
 
+def extract_model_nick(model_path):
+    # Extract the part after the first "/"
+    model_name = model_path.split("/")[1]
+    
+    # Match common patterns like "phi-3" or "Mistral-7B"
+    match = re.match(r"([A-Za-z0-9\-]+?)(?=-\d|-[a-zA-Z])", model_name)
+    
+    return match.group(1) if match else model_name
+
 def iterative_training_and_generation(
     client,
     args,
@@ -641,13 +650,24 @@ def iterative_training_and_generation(
     )
     
     is_base_model = start_generation == 1
+    model_nick = None
     
-    # Base model name for tokenizer (always base model)
-    base_model_name = "microsoft/Phi-3-mini-128k-instruct"
-    tokenizer = AutoTokenizer.from_pretrained(base_model_name)
-    tokenizer.pad_token = tokenizer.eos_token
+    if is_base_model:
+        base_model_name = model_path
+        model_nick = extract_model_nick(base_model_name)
+    else:
+        # For fine-tuned models, extract base model name for tokenizer
+        # Assume model_path format: "./phi3-squad2-gen{X}-final"
+        base_model_name = "microsoft/Phi-3-mini-128k-instruct"  # Default fallback
+        model_nick = extract_model_nick(base_model_name)
+
+        tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+        tokenizer.pad_token = tokenizer.eos_token
     
     print(f"Starting iterative training and generation for {num_generations} generations...")
+
+    # Used to load dataset
+    formatted_dataset = None
     
     generation_progress = tqdm(
         range(start_generation, start_generation + num_generations), 
@@ -695,18 +715,32 @@ def iterative_training_and_generation(
                     torch_dtype=torch.float16,
                     low_cpu_mem_usage=True
                 )
-                # Load synthetic train + fixed test from MongoDB
-                ds = load_dataset_from_mongo(
-                    client=client,
-                    train_coll=args.synthetic_coll,
-                    test_coll=args.test_coll,
-                    db_name=args.db,
-                    projection={"_id": 0}
-                )
-                formatted_dataset = DatasetDict({
-                    split: ds[split].map(make_prompt)
-                    for split in ds
-                })
+                if start_generation == 1:
+                    ds = load_dataset_from_mongo(
+                        client=client,
+                        train_coll=args.train_coll,
+                        test_coll=args.test_coll,
+                        db_name=args.db,
+                        projection={"_id": 0}
+                    )
+                    formatted_dataset = DatasetDict({
+                        split: ds[split].map(make_prompt)
+                        for split in ds
+                    })
+                else:
+                    # Load synthetic dataset for previous generation from MongoDB
+                    ds = load_dataset_from_mongo(
+                        client=client,
+                        train_coll=args.synthetic_coll,
+                        test_coll=args.test_coll,
+                        db_name=args.db,
+                        projection={"_id": 0},
+                        generation=generation-1  # Optional param to filter by generation if supported
+                    )
+                    formatted_dataset = DatasetDict({
+                        split: ds[split].map(make_prompt)
+                        for split in ds
+                    })
             else:
                 # Subsequent generations: load previous generation fine-tuned model
                 previous_model_path = f"./phi3-squad2-gen{generation-1}-final"
@@ -810,6 +844,9 @@ def iterative_training_and_generation(
             "disable_tqdm": False,
         }
         train_args = TrainingArguments(**train_config)
+
+        offload_cache_dir = "./offload_cache"
+        os.makedirs(offload_cache_dir, exist_ok=True)
         
         trainer = train_model(model, tokenized, tokenizer, train_args)
         
@@ -823,10 +860,22 @@ def iterative_training_and_generation(
         
         # Step 4: Synthetic data generation
         print("Step 2: Generating synthetic answers...")
-        model.eval()
+        model.eval()  # Ensure model is in eval mode for generation
+
+        generation_dataset = None
+        # For synthetic generation, ensure we have proper formatted dataset structure
+        if generation == 1 or (generation == start_generation and is_base_model):
+            generation_dataset = formatted_dataset
+        else:
+            # Ensure synthetic data has the right format for generation
+            # If it doesn't have 'prompt' column, create it
+            if 'prompt' not in formatted_dataset['train'].column_names:
+                print("🔧 Reformatting synthetic data for generation...")
+                formatted_dataset['train'] = formatted_dataset['train'].map(make_prompt)
+            generation_dataset = formatted_dataset
         
         synthetic_dataset = generate_synthetic_answers(
-            model, tokenizer, formatted_dataset, device, generation
+            model, tokenizer, generation_dataset, device, generation
         )
         
         # Step 5: Save synthetic dataset to MongoDB
@@ -1142,7 +1191,7 @@ def evaluate_generation(
         device=device
     )
 
-    model_nick = os.path.basename(model_path)
+    model_nick = extract_model_nick(model_path)
     evaluation_results.update({
         'generation': generation_num,
         'test_dataset_size': len(test_dataset),
