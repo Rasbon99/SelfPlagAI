@@ -86,6 +86,30 @@ def load_dataset_from_mongo(
     test_ds = Dataset.from_pandas(test_df)
     return DatasetDict({"train": train_ds, "test": test_ds})
 
+
+def load_test_set_from_mongo(
+    client,
+    test_coll: str,
+    db_name: str = "squadv2",
+    projection: dict = {"_id": 0}
+) -> DatasetDict:
+    """
+    Carica da MongoDB solo il test come HuggingFace DatasetDict.
+
+    Args:
+        client: istanza MongoClient autenticata.
+        train_coll: collezione con il train set.
+        test_coll: collezione con il test set.
+        db_name: nome del database MongoDB.
+        projection: come proiettare i campi (per es. escludere _id).
+
+    Returns:
+        dataset: DatasetDict con split 'train' e 'test'.
+    """
+    test_df = read_collection(client, test_coll, db_name=db_name, as_dataframe=True, projection=projection)
+    test_ds = Dataset.from_pandas(test_df)
+    return DatasetDict({"test": test_ds})
+
 def make_prompt(example):
     context = example["context"]
     question = example["question"]
@@ -174,7 +198,6 @@ class BERTScoreTrainer(Trainer):
                     max_new_tokens=50,
                     do_sample=False,
                     pad_token_id=self.processing_class.eos_token_id,
-                    use_cache=True
                 )
                 
                 # Decode predictions and references
@@ -625,7 +648,7 @@ def extract_model_nick(model_path):
 def iterative_training_and_generation(
     client,
     args,
-    model_path="microsoft/Phi-3-mini-128k-instruct",
+    base_model_name="microsoft/Phi-3-mini-128k-instruct",
     num_generations=3,
     start_generation=1,
     device="cuda" if torch.cuda.is_available() else "cpu"
@@ -650,19 +673,9 @@ def iterative_training_and_generation(
     )
     
     is_base_model = start_generation == 1
-    model_nick = None
     
-    if is_base_model:
-        base_model_name = model_path
-        model_nick = extract_model_nick(base_model_name)
-    else:
-        # For fine-tuned models, extract base model name for tokenizer
-        # Assume model_path format: "./phi3-squad2-gen{X}-final"
-        base_model_name = "microsoft/Phi-3-mini-128k-instruct"  # Default fallback
-        model_nick = extract_model_nick(base_model_name)
-
-        tokenizer = AutoTokenizer.from_pretrained(base_model_name)
-        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+    tokenizer.pad_token = tokenizer.eos_token
     
     print(f"Starting iterative training and generation for {num_generations} generations...")
 
@@ -698,8 +711,8 @@ def iterative_training_and_generation(
                 # Load train/test data from MongoDB original collections
                 ds = load_dataset_from_mongo(
                     client=client,
-                    train_coll=args.train_coll,
-                    test_coll=args.test_coll,
+                    train_coll=args.train_subset_coll,
+                    test_coll=args.test_subset_coll,
                     db_name=args.db,
                     projection={"_id": 0}
                 )
@@ -710,7 +723,7 @@ def iterative_training_and_generation(
             elif generation == start_generation and not is_base_model:
                 # Starting from fine-tuned model (previous checkpoint)
                 model = AutoModelForCausalLM.from_pretrained(
-                    model_path,
+                    base_model_name,
                     device_map="auto",
                     torch_dtype=torch.float16,
                     low_cpu_mem_usage=True
@@ -718,8 +731,8 @@ def iterative_training_and_generation(
                 if start_generation == 1:
                     ds = load_dataset_from_mongo(
                         client=client,
-                        train_coll=args.train_coll,
-                        test_coll=args.test_coll,
+                        train_coll=args.train_subset_coll,
+                        test_coll=args.test_subset_coll,
                         db_name=args.db,
                         projection={"_id": 0}
                     )
@@ -732,10 +745,9 @@ def iterative_training_and_generation(
                     ds = load_dataset_from_mongo(
                         client=client,
                         train_coll=args.synthetic_coll,
-                        test_coll=args.test_coll,
+                        test_coll=args.test_subset_coll,
                         db_name=args.db,
                         projection={"_id": 0},
-                        generation=generation-1  # Optional param to filter by generation if supported
                     )
                     formatted_dataset = DatasetDict({
                         split: ds[split].map(make_prompt)
@@ -756,7 +768,7 @@ def iterative_training_and_generation(
                 ds = load_dataset_from_mongo(
                     client=client,
                     train_coll=args.synthetic_coll,
-                    test_coll=args.test_coll,
+                    test_coll=args.test_subset_coll,
                     db_name=args.db,
                     projection={"_id": 0},
                     generation=generation-1  # Optional param to filter by generation if supported
@@ -930,13 +942,22 @@ def generate_and_evaluate(model, tokenizer, test_dataset, device="cuda" if torch
         else:
             prompt_without_answer = full_prompt
 
+        # Use model's device instead of forcing specific device
         inputs = tokenizer(
             prompt_without_answer,
             return_tensors="pt",
             truncation=True,
             padding="max_length",
             max_length=512
-        ).to(device)
+        )
+        
+        # Move inputs to model's device instead of forcing a specific device
+        if hasattr(model, 'device'):
+            # For models with device_map="auto", use the device of the first parameter
+            first_param_device = next(model.parameters()).device
+            inputs = {k: v.to(first_param_device) for k, v in inputs.items()}
+        else:
+            inputs = {k: v.to(device) for k, v in inputs.items()}
 
         input_length = inputs['input_ids'].shape[1]
 
@@ -945,7 +966,7 @@ def generate_and_evaluate(model, tokenizer, test_dataset, device="cuda" if torch
                 **inputs,
                 max_new_tokens=50,
                 do_sample=False,
-                pad_token_id=tokenizer.eos_token_id
+                pad_token_id=tokenizer.eos_token_id,
             )
 
         generated_tokens = output[0][input_length:]
@@ -1152,13 +1173,13 @@ def evaluate_generation(
 
     print(f"▶ Loading test dataset from MongoDB: db='{db_name}', collection='{test_coll}'")
 
-    ds = load_dataset_from_mongo(
+    ds = load_test_set_from_mongo(
         client=mongo_client,
-        train_coll=None,
-        test_coll=test_coll,
         db_name=db_name,
-        projection={"_id": 0}
+        test_coll=test_coll,
+        projection={"_id": 0}  # Exclude MongoDB IDs
     )
+
     test_dataset = ds['test']
     print(f"   Test dataset size: {len(test_dataset)} examples")
 
@@ -1171,13 +1192,34 @@ def evaluate_generation(
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        device_map="auto",
-        torch_dtype=torch.float16 if generation_num > 0 else None,
-        low_cpu_mem_usage=True if generation_num > 0 else False
-    )
-    model.to(device)
+    # Create offload directory
+    offload_cache_dir = "./offload_cache"
+    os.makedirs(offload_cache_dir, exist_ok=True)
+    
+    if generation_num == 0:
+        # Base model
+        model = AutoModelForCausalLM.from_pretrained(
+            base_model_name,
+            device_map="auto",
+            torch_dtype=torch.float16,
+            offload_folder=offload_cache_dir,  # Add offload directory
+            low_cpu_mem_usage=True
+        )
+        model_path = base_model_name
+    else:
+        # Fine-tuned model
+        model_path = f"./phi3-squad2-gen{generation_num}-final"
+        
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model directory not found: {model_path}")
+        
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            device_map="auto",
+            torch_dtype=torch.float16,
+            offload_folder=offload_cache_dir,  # Add offload directory
+            low_cpu_mem_usage=True
+        )
     model.eval()
 
     formatted = DatasetDict({'test': test_dataset.map(make_prompt)})
@@ -1191,7 +1233,7 @@ def evaluate_generation(
         device=device
     )
 
-    model_nick = extract_model_nick(model_path)
+    model_nick = extract_model_nick(base_model_name)
     evaluation_results.update({
         'generation': generation_num,
         'test_dataset_size': len(test_dataset),
@@ -1289,7 +1331,7 @@ def evaluate_multiple_generations(
                 generation_num=generation_num,
                 mongo_client=args.mongo_client,
                 db_name=args.db,
-                test_coll=args.test_coll,
+                test_coll=args.test_subset_coll,
                 device=device,
                 save_results=save_results,
                 results_dir=results_dir
@@ -1528,13 +1570,7 @@ def export_all_generations_predictions(
     output_dir="predictions_export_squad05",
     mongo_collection_prefix="predictions_gen"
 ):
-    import os
-    import torch
-    import json
-    import pandas as pd
-    from tqdm import tqdm
-    from transformers import AutoTokenizer, AutoModelForCausalLM
-    from bitsandbytes import BitsAndBytesConfig
+    
 
     os.makedirs(output_dir, exist_ok=True)
 

@@ -10,7 +10,7 @@ def get_mongo_client(username: str, password: str, cluster: str = "x4cluster.n6x
     Returns an authenticated MongoClient for the specified cluster.
 
     Args:
-        username (str): MongoDB username.
+        username (str): MongoDB username.ù+
         password (str): MongoDB password.
         cluster (str): MongoDB cluster host (default: "x4cluster.n6xsnhl.mongodb.net").
 
@@ -42,7 +42,7 @@ def insert_dataframe_to_mongo(client, dataframe, collection_name: str, db_name: 
         else:
             return obj
 
-    cleaned_df = dataframe.applymap(convert_ndarray_to_list)
+    cleaned_df = dataframe.map(convert_ndarray_to_list)
     records = cleaned_df.to_dict("records")
 
     client[db_name][collection_name].insert_many(records)

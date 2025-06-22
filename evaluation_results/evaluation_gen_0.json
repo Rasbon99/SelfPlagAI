@@ -1,0 +1,42 @@
+{
+  "test_size": 1,
+  "exact_match": 1.0,
+  "f1_score": 0.0,
+  "bert_score_f1": 0.8424683809280396,
+  "semantic_similarity": 0.0,
+  "avg_prediction_length": 5.0,
+  "avg_reference_length": 1.0,
+  "predictions": [
+    "An innate force of impetus."
+  ],
+  "references": [
+    "impetus"
+  ],
+  "questions": [
+    "What did objects in forced motion contain according to the late Medieval idea that influence Aristotle?"
+  ],
+  "contexts": [
+    "The shortcomings of Aristotelian physics would not be fully corrected until the 17th century work of Galileo Galilei, who was influenced by the late Medieval idea that objects in forced motion carried..."
+  ],
+  "individual_scores": {
+    "bert_f1": [
+      0.8424683809280396
+    ],
+    "token_f1": [
+      0
+    ],
+    "exact_match": [
+      1
+    ],
+    "semantic_similarity": [
+      0.0
+    ]
+  },
+  "generation": 0,
+  "test_dataset_size": 1,
+  "database_name": "squadv2",
+  "test_collection": "squad_test_subset_0_0_05",
+  "base_model_name": "microsoft/phi-3-mini-128k-instruct",
+  "model_nick": "phi",
+  "model_path": "microsoft/phi-3-mini-128k-instruct"
+}

@@ -38,8 +38,10 @@ def parse_args():
                         help="Original full SQuAD v2 train collection")
     parser.add_argument("--test-coll", type=str, default="squadv2_original_test",
                         help="Original full SQuAD v2 test collection")
-    parser.add_argument("--subset-coll", type=str, default="squad_subset_0_5pct",
-                        help="Collection for the sampled subset")
+    parser.add_argument("--train-subset-coll", type=str, default="squad_subset_0_5pct",
+                        help="Collection for the sampled train subset")
+    parser.add_argument("--test-subset-coll", type=str, default="squad_subset_0_5pct",
+                        help="Collection for the sampled test subset")
     parser.add_argument("--synthetic-coll", type=str, default="squad_synthetic_train",
                         help="Collection for synthetic train generations")
     parser.add_argument("--metadata-coll", type=str, default="synthetic_metadata",
@@ -52,8 +54,9 @@ def main():
     args = parse_args()
     load_dotenv("key.env")
 
-    username = os.getenv("USERNAME")
-    password = os.getenv("PASSWORD")
+    username = os.getenv("MONGO_USERNAME")
+    password = os.getenv("MONGO_PASSWORD")
+    print(f"Connecting to MongoDB as {username}...")
     if not username or not password:
         print("❌ USERNAME or PASSWORD not found in .env file.")
         return
@@ -70,7 +73,16 @@ def main():
     read_original_and_create_subset(
         client=client,
         original_coll=args.orig_train_coll,
-        subset_coll=args.subset_coll,
+        subset_coll=args.train_subset_coll,
+        db_name=args.db,
+        sample_frac=args.sample_frac,
+        random_state=42
+    )
+
+    read_original_and_create_subset(
+        client=client,
+        original_coll=args.test_coll,
+        subset_coll=args.test_subset_coll,
         db_name=args.db,
         sample_frac=args.sample_frac,
         random_state=42
@@ -87,12 +99,12 @@ def main():
     _ = score(["test"], ["test"], lang="en", verbose=False)
     print("BERTScore ready ✅\n")
 
-    current_train_coll = args.subset_coll
+    current_train_coll = args.train_subset_coll
 
     for gen in range(1, args.num_generations + 1):
         print(f"=== Generation {gen} ===")
 
-        synthetic_ds = iterative_training_and_generation(
+        iterative_training_and_generation(
             client=client,
             args=args,
             base_model_name=args.hf_model,
@@ -101,33 +113,23 @@ def main():
             device="cuda" if torch.cuda.is_available() else "cpu"
         )
 
-        print("Saving synthetic train and metadata to MongoDB...")
-        save_synthetic_dataset_to_mongo(
-            client=client,
-            synthetic_dataset=synthetic_ds,
-            gen_number=gen,
-            train_coll=args.synthetic_coll,
-            metadata_coll=args.metadata_coll,
-            db_name=args.db
-        )
-
         current_train_coll = args.synthetic_coll  # aggiorna se serve
 
         print()
+
+    # Add mongo_client to args object
+    args.mongo_client = client
+    
 
     print("▶ Evaluating all generations...")
     evaluate_multiple_generations(
         args=args,
         base_model_name=args.hf_model,
-        start_generation=1,
-        num_generations=args.num_generations,
+        start_generation=0,
+        num_generations=args.num_generations + 1,  # +1 to include base model (gen 0)
         device="cuda" if torch.cuda.is_available() else "cpu",
-        mongo_client=client,
-        db_name=args.db,
-        test_coll=args.test_coll,
-        synthetic_coll=args.synthetic_coll,
         save_results=True,
-        results_dir="evaluation_results_squad05"
+        results_dir="evaluation_results"
     )
 
     print("▶ Exporting predictions...")
@@ -135,7 +137,7 @@ def main():
         base_model_name=args.hf_model,
         mongo_client=client,
         db_name=args.db,
-        test_coll=args.test_coll,
+        test_coll=args.test_subset_coll,
         start_generation=1,
         end_generation=args.num_generations,
         device="cuda" if torch.cuda.is_available() else "cpu",
