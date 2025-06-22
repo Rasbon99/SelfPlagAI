@@ -12,13 +12,13 @@ import torch
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    Accelerator,
     BitsAndBytesConfig,
     TrainingArguments,
     DataCollatorForLanguageModeling,
     Trainer,
     TrainerCallback,
 )
+from accelerate import Accelerator
 from peft import LoraConfig, get_peft_model
 from bert_score import score
 
