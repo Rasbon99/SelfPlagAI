@@ -3,14 +3,18 @@ import io
 import json
 import random
 import sys
+import shutil
+import os
+import re
 
 # Third-party libraries - data processing
 import numpy as np
-from datasets import Dataset
+from datasets import Dataset, DatasetDict
 from tqdm import tqdm
 
 # Third-party libraries - deep learning / transformers
 import torch
+from accelerate import Accelerator
 from bert_score import score
 from transformers import DataCollatorForLanguageModeling, Trainer, TrainerCallback
 
@@ -20,16 +24,8 @@ def make_prompt(example):
     question = example["question"]
     answer = example["answers"]["text"][0] if example["answers"]["text"] else "No answer"
 
-    prompt = f"[INST] Given the context, answer the question.\n\nContext: {context}\n\nQuestion: {question} [/INST] {answer}"
+    prompt = f"[INST] Given the context, answer the question. If you do not find the answer in the context, answer with \"No answer\"\n\nContext: {context}\n\nQuestion: {question} [/INST] Answer: {answer}"
     return {"prompt": prompt, "reference": answer}
-    
-def tokenize(example, tokenizer):
-    return tokenizer(
-        example["prompt"],
-        truncation=True,
-        padding="max_length",
-        max_length=256
-    )
     
 # Modified BERTScore function with complete output suppression
 def silent_bert_score(cands, refs, lang="en"):
@@ -71,25 +67,75 @@ class TrainingLossEarlyStoppingCallback(TrainerCallback):
                     print(f"🛑 Early stopping triggered! Best loss: {self.best_loss:.4f}")
                     control.should_training_stop = True
 
+# Define tokenization function based on data structure
+def tokenize(example, tokenizer):
+    # Check if example has 'prompt' key (formatted data) or needs to be created
+    if 'prompt' in example:
+        text_to_tokenize = example["prompt"]
+    else:
+        # Create prompt from raw data using make_prompt logic
+        context = example["context"]
+        question = example["question"]
+        
+        # Handle different answer formats
+        if "answers" in example:
+            answers = example["answers"]
+            # Check if answers is a dict with 'text' key (original format)
+            if isinstance(answers, dict) and "text" in answers:
+                answer = answers["text"][0] if answers["text"] else "No answer"
+            # Check if answers is a list (some synthetic data format)
+            elif isinstance(answers, list) and len(answers) > 0:
+                # If it's a list of strings
+                if isinstance(answers[0], str):
+                    answer = answers[0]
+                # If it's a list of dicts with 'text' key
+                elif isinstance(answers[0], dict) and "text" in answers[0]:
+                    answer = answers[0]["text"]
+                else:
+                    answer = "No answer"
+            else:
+                answer = "No answer"
+        else:
+            # Fallback: check if there's a 'reference' field
+            answer = example.get("reference", "No answer")
+        
+        text_to_tokenize = f"[INST] Given the context, answer the question.\n\nContext: {context}\n\nQuestion: {question} [/INST] Answer: {answer}"
+    
+    return tokenizer(
+        text_to_tokenize,
+        truncation=True,
+        padding="max_length",
+        max_length=512
+    )
+ 
+
 # Fixed Custom Trainer class with BERTScore loss
 class BERTScoreTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.label_names = ["labels"]
+        
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         """
         Custom loss function using BERTScore - completely silent
+        Extracts only the answer part after "Answer: " for BERTScore computation
         """
         labels = inputs.get("labels")
-
+        
+        # Temporarily disable cache for forward pass
+        model.config.use_cache = False
+        
         # Forward pass
         outputs = model(**inputs)
-
+        
         # Generate predictions for BERTScore
         with torch.no_grad():
             input_ids = inputs["input_ids"]
             attention_mask = inputs["attention_mask"]
-
+            
+            # Re-enable cache for generation
+            model.config.use_cache = True
+            
             # Generate text
             try:
                 generated = model.generate(
@@ -97,31 +143,69 @@ class BERTScoreTrainer(Trainer):
                     attention_mask=attention_mask,
                     max_new_tokens=50,
                     do_sample=False,
-                    pad_token_id=self.processing_class.eos_token_id
+                    pad_token_id=self.processing_class.eos_token_id,
+                    use_cache=True
                 )
-
+                
                 # Decode predictions and references
                 pred_texts = self.processing_class.batch_decode(generated, skip_special_tokens=True)
                 ref_texts = self.processing_class.batch_decode(labels, skip_special_tokens=True)
-
-                # Calculate BERTScore with completely silent function
-                P, R, F1 = silent_bert_score(pred_texts, ref_texts, lang="en")
+                
+                # Extract only the answer part from both predictions and references
+                extracted_preds = []
+                extracted_refs = []
+                
+                for pred_text in pred_texts:
+                    # Extract answer after "Answer: " in prediction
+                    if "Answer: " in pred_text:
+                        answer_part = pred_text.split("Answer: ")[-1].strip()
+                    elif "[/INST]" in pred_text:
+                        # Fallback: extract after [/INST] if "Answer: " not found
+                        answer_part = pred_text.split("[/INST]")[-1].strip()
+                        # Remove "Answer: " prefix if it exists
+                        if answer_part.startswith("Answer: "):
+                            answer_part = answer_part[8:].strip()
+                    else:
+                        answer_part = pred_text.strip()
+                    
+                    extracted_preds.append(answer_part)
+                
+                for ref_text in ref_texts:
+                    # Extract answer after "Answer: " in reference
+                    if "Answer: " in ref_text:
+                        answer_part = ref_text.split("Answer: ")[-1].strip()
+                    elif "[/INST]" in ref_text:
+                        # Fallback: extract after [/INST] if "Answer: " not found
+                        answer_part = ref_text.split("[/INST]")[-1].strip()
+                        # Remove "Answer: " prefix if it exists
+                        if answer_part.startswith("Answer: "):
+                            answer_part = answer_part[8:].strip()
+                    else:
+                        answer_part = ref_text.strip()
+                    
+                    extracted_refs.append(answer_part)
+                
+                # Calculate BERTScore with completely silent function on extracted answers only
+                P, R, F1 = silent_bert_score(extracted_preds, extracted_refs, lang="en")
                 bert_f1 = F1.mean().item()
-
+                
                 # Convert BERTScore to loss
                 bert_loss = torch.tensor(1.0 - bert_f1, requires_grad=True, device=input_ids.device)
             except Exception as e:
                 # Fallback to standard loss if BERTScore fails
                 bert_loss = outputs.loss
-
+            finally:
+                # Disable cache again for gradient checkpointing compatibility
+                model.config.use_cache = False
+        
         # Combine with standard language modeling loss
         standard_loss = outputs.loss
         combined_loss = 0.7 * standard_loss + 0.3 * bert_loss
-
+        
         return (combined_loss, outputs) if return_outputs else combined_loss
 
 # Data preparation function
-def prepare_training_data(tokenized_dataset, tokenizer):
+def prepare_training_data(tokenized_dataset):
     """Prepare data for training"""
 
     def add_labels(example):
@@ -139,13 +223,53 @@ def prepare_training_data(tokenized_dataset, tokenizer):
 
     return {"train": train_dataset}
 
+def cleanup_checkpoints(output_dir):
+    """Remove checkpoint directories and files"""
+    if os.path.exists(output_dir):
+        # Find all checkpoint directories
+        checkpoint_dirs = [d for d in os.listdir(output_dir) if d.startswith('checkpoint-')]
+        
+        for checkpoint_dir in checkpoint_dirs:
+            checkpoint_path = os.path.join(output_dir, checkpoint_dir)
+            if os.path.isdir(checkpoint_path):
+                print(f"🗑️ Removing checkpoint: {checkpoint_path}")
+                shutil.rmtree(checkpoint_path)
+        
+        # Remove any other checkpoint-related files
+        checkpoint_files = [f for f in os.listdir(output_dir) if 'checkpoint' in f.lower()]
+        for checkpoint_file in checkpoint_files:
+            file_path = os.path.join(output_dir, checkpoint_file)
+            if os.path.isfile(file_path):
+                print(f"🗑️ Removing checkpoint file: {file_path}")
+                os.remove(file_path)
+        
+        print("✅ Checkpoint cleanup completed!")
+
+def configure_model_for_training(model):
+    """Configure model for training with proper cache settings"""
+    
+    # Disable use_cache for training compatibility with gradient checkpointing
+    if hasattr(model.config, 'use_cache'):
+        model.config.use_cache = False
+        print("✅ Set use_cache=False for gradient checkpointing compatibility")
+    
+    # Enable gradient checkpointing if available
+    if hasattr(model, 'gradient_checkpointing_enable'):
+        model.gradient_checkpointing_enable()
+        print("✅ Enabled gradient checkpointing for memory efficiency")
+    
+    return model
+
 # Main training function
 def train_model(model, tokenized_data, tokenizer, train_args):
     """Training function with BERTScore and early stopping"""
-
+    
+    # Configure model for training
+    model = configure_model_for_training(model)
+    
     # Prepare data
-    prepared_data = prepare_training_data(tokenized_data, tokenizer)
-
+    prepared_data = prepare_training_data(tokenized_data)
+    
     # Setup data collator
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer,
@@ -158,7 +282,7 @@ def train_model(model, tokenized_data, tokenizer, train_args):
         patience=5,
         min_delta=0.01
     )
-
+    
     # Initialize BERTScore Trainer
     trainer = BERTScoreTrainer(
         model=model,
@@ -168,318 +292,284 @@ def train_model(model, tokenized_data, tokenizer, train_args):
         processing_class=tokenizer,
         callbacks=[early_stopping_callback],
     )
-
+    
     # Start training
     print("Starting training with BERTScore optimization...")
     print("Early stopping based on training loss improvement")
-
+    print("Cache disabled for gradient checkpointing compatibility")
+    
     trainer.train()
-
+    
+    # Re-enable cache for inference after training
+    if hasattr(model.config, 'use_cache'):
+        model.config.use_cache = True
+        print("✅ Re-enabled use_cache for inference")
+    
     # Save model
-    trainer.save_model("./phi3-squad2-final")
-    print("✅ Model saved to ./phi3-squad2-final")
-
+    final_model_path = "./phi3-squad2-final"
+    trainer.save_model(final_model_path)
+    print(f"✅ Model saved to {final_model_path}")
+    
+    # Clean up checkpoints after saving the final model
+    print("\n🧹 Cleaning up checkpoints...")
+    if hasattr(train_args, 'output_dir') and train_args.output_dir:
+        cleanup_checkpoints(train_args.output_dir)
+    
+    # Also clean up from the final model directory if it has checkpoints
+    cleanup_checkpoints(final_model_path)
+    
+    # Clean up any checkpoint directories in the current working directory
+    current_dir_checkpoints = [d for d in os.listdir('.') if d.startswith('checkpoint-')]
+    for checkpoint_dir in current_dir_checkpoints:
+        if os.path.isdir(checkpoint_dir):
+            print(f"🗑️ Removing checkpoint: {checkpoint_dir}")
+            shutil.rmtree(checkpoint_dir)
+    
+    print("🎉 Training completed and checkpoints cleaned up!")
+    
     return trainer
 
-def evaluate_test_set_with_examples(model, tokenizer, dataset, make_prompt_func, num_examples=10):
+def generate_synthetic_answers(model, tokenizer, formatted_dataset, device, generation_num=1):
     """
-    Comprehensive evaluation on test set with detailed prediction examples
+    Generate synthetic answers using the fine-tuned causal language model.
+    Takes formatted_dataset with prompts as input.
+    Updated to handle "Answer: " format and write "No answer" when appropriate.
     """
-    print("="*60)
-    print("STARTING TEST SET EVALUATION WITH EXAMPLES")
-    print("="*60)
-
-    # Prepare test data
-    print("Preparing test prompts...")
-    test_prompts = dataset["test"].map(make_prompt_func)
-
-    # Tokenize test prompts
-    print("Tokenizing test data...")
-    tokenized_test = test_prompts.map(
-        lambda x: tokenizer(x["prompt"], truncation=True, padding="max_length", max_length=512),
-        batched=True
+    
+    print(f"Generating synthetic answers (Generation {generation_num})...")
+    
+    synthetic_data = []
+    
+    # Use the train split from formatted_dataset
+    train_dataset = formatted_dataset['train']
+    
+    # Enhanced progress bar with statistics
+    progress_bar = tqdm(
+        train_dataset, 
+        desc=f"🤖 Gen {generation_num} - Generating answers",
+        unit="examples",
+        position=1,
+        leave=False,
+        dynamic_ncols=True
     )
-
-    # Set model to evaluation mode
-    model.eval()
-
-    # Initialize lists for predictions and references
-    preds = []
-    refs = []
-    raw_outputs = []
-    prompts_list = []
-
-    print(f"Generating predictions for {len(test_prompts)} test examples...")
-
-    # Generate predictions
-    for example in tqdm(test_prompts, desc="Evaluating"):
-        # Tokenize input
-        inputs = tokenizer(
-            example["prompt"],
-            return_tensors="pt",
-            truncation=True,
-            padding="max_length",
-            max_length=512
-        ).to(model.device)
-
-        # Generate response
-        with torch.no_grad():
-            output = model.generate(
-                **inputs,
-                max_new_tokens=50,
-                do_sample=False,
-                pad_token_id=tokenizer.eos_token_id
-            )
-
-        # Decode output
-        decoded = tokenizer.decode(output[0], skip_special_tokens=True)
-
-        # Extract answer (everything after [/INST])
-        if '[/INST]' in decoded:
-            answer = decoded.split('[/INST]')[-1].strip()
+    
+    # Statistics tracking
+    successful_generations = 0
+    failed_generations = 0
+    total_examples = len(train_dataset)
+    
+    for idx, example in enumerate(progress_bar):
+        # Get the prompt that was created by make_prompt function
+        prompt = example['prompt']
+        
+        # For your format: "[INST] ... [/INST] Answer: {answer}"
+        # We need to generate starting from just before "Answer:"
+        if '[/INST] Answer:' in prompt:
+            # Remove the existing answer to create generation prompt
+            generation_prompt = prompt.split(' Answer:')[0] + ' Answer:'
+        elif '[/INST]' in prompt:
+            # Fallback: if no "Answer:" found, add it
+            generation_prompt = prompt.split('[/INST]')[0] + '[/INST] Answer:'
         else:
-            answer = decoded.strip()
-
-        # Store results
-        preds.append(answer)
-        refs.append(example.get("reference", example.get("answer", "No answer")))
-        raw_outputs.append(decoded)
-        prompts_list.append(example["prompt"])
-
-    print("Predictions generated! Computing metrics...")
-
-    # Compute BERTScore
-    print("Computing BERTScore...")
-    try:
-        P, R, F1 = score(preds, refs, lang="en", verbose=False)
-        bert_scores = {
-            "precision": P.mean().item(),
-            "recall": R.mean().item(),
-            "f1": F1.mean().item()
-        }
-    except Exception as e:
-        print(f"BERTScore computation failed: {e}")
-        bert_scores = {"precision": 0.0, "recall": 0.0, "f1": 0.0}
-        P = R = F1 = [0.0] * len(preds)
-
-    # Compute exact match accuracy
-    exact_matches = []
-    for pred, ref in zip(preds, refs):
-        if ref.lower().strip() in pred.lower().strip():
-            exact_matches.append(1)
-        else:
-            exact_matches.append(0)
-
-    exact_match_score = np.mean(exact_matches)
-
-    # Compute answer length statistics
-    pred_lengths = [len(pred.split()) for pred in preds]
-    ref_lengths = [len(ref.split()) for ref in refs]
-
-    # Print comprehensive results
-    print("="*60)
-    print("EVALUATION RESULTS")
-    print("="*60)
-    print(f"Test Set Size: {len(preds)}")
-    print("-"*60)
-    print("BERTScore Metrics:")
-    print(f"  Precision: {bert_scores['precision']:.4f}")
-    print(f"  Recall:    {bert_scores['recall']:.4f}")
-    print(f"  F1 Score:  {bert_scores['f1']:.4f}")
-    print("-"*60)
-    print("Other Metrics:")
-    print(f"  Exact Match: {exact_match_score:.4f}")
-    print("-"*60)
-    print("Answer Length Statistics:")
-    print(f"  Avg Prediction Length: {np.mean(pred_lengths):.2f} words")
-    print(f"  Avg Reference Length:  {np.mean(ref_lengths):.2f} words")
-    print("="*60)
-
-    # Show detailed examples
-    print("\n" + "="*80)
-    print("DETAILED PREDICTION EXAMPLES")
-    print("="*80)
-
-    # Select diverse examples: best, worst, and random
-    f1_scores = [f.item() if hasattr(f, 'item') else f for f in F1]
-
-    # Get indices for different categories
-    sorted_indices = sorted(range(len(f1_scores)), key=lambda i: f1_scores[i], reverse=True)
-
-    best_indices = sorted_indices[:3]  # Top 3
-    worst_indices = sorted_indices[-3:]  # Bottom 3
-    random_indices = random.sample(range(len(preds)), min(4, len(preds)))  # Random 4
-
-    example_categories = [
-        ("BEST PREDICTIONS", best_indices),
-        ("WORST PREDICTIONS", worst_indices),
-        ("RANDOM PREDICTIONS", random_indices)
-    ]
-
-    for category_name, indices in example_categories:
-        print(f"\n{category_name}:")
-        print("-" * 80)
-
-        for i, idx in enumerate(indices):
-            print(f"\nExample {i+1} (Index {idx}):")
-            print(f"BERTScore F1: {f1_scores[idx]:.4f}")
-            print(f"Exact Match: {'✓' if exact_matches[idx] else '✗'}")
-
-            # Extract question from prompt
-            prompt = prompts_list[idx]
-            if "Question:" in prompt:
-                question = prompt.split("Question:")[-1].split("Answer:")[0].strip()
-                print(f"Question: {question}")
+            # Fallback: use the full prompt
+            generation_prompt = prompt
+        
+        try:
+            # Tokenize input - increased max_length to handle full context
+            inputs = tokenizer(
+                generation_prompt,
+                max_length=512,  # Increased from 50 to handle full context
+                truncation=True,
+                padding=True,
+                return_tensors="pt"
+            ).to(device)
+            
+            # Generate answer using causal LM
+            with torch.no_grad():
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=50,   # Reduced for concise answers
+                    do_sample=True,      # Keep diversity
+                    temperature=0.7,     # Controlled randomness
+                    top_p=0.9,          # Nucleus sampling
+                    pad_token_id=tokenizer.eos_token_id,
+                    eos_token_id=tokenizer.eos_token_id
+                )
+            
+            # Decode the generated text
+            generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            
+            # Extract only the answer part after "Answer: "
+            if 'Answer:' in generated_text:
+                # Split by "Answer:" and take the last part (the generated answer)
+                answer_parts = generated_text.split('Answer:')
+                if len(answer_parts) > 1:
+                    synthetic_answer = answer_parts[-1].strip()
+                else:
+                    synthetic_answer = "No answer"
             else:
-                print(f"Prompt: {prompt[:200]}...")
-
-            print(f"Reference Answer: {refs[idx]}")
-            print(f"Model Prediction: {preds[idx]}")
-
-            # Analysis
-            pred_words = len(preds[idx].split())
-            ref_words = len(refs[idx].split())
-            print(f"Length: Pred={pred_words} words, Ref={ref_words} words")
-
-            # Simple similarity check
-            pred_lower = preds[idx].lower()
-            ref_lower = refs[idx].lower()
-            common_words = set(pred_lower.split()) & set(ref_lower.split())
-            print(f"Common words: {len(common_words)}")
-
-            print("-" * 50)
-
-    # Show questions by category if available
-    if "category" in test_prompts.column_names or "topic" in test_prompts.column_names:
-        print(f"\n{'='*80}")
-        print("PERFORMANCE BY CATEGORY")
-        print("="*80)
-
-        category_field = "category" if "category" in test_prompts.column_names else "topic"
-        categories = {}
-
-        for i, example in enumerate(test_prompts):
-            cat = example.get(category_field, "Unknown")
-            if cat not in categories:
-                categories[cat] = {"f1_scores": [], "exact_matches": [], "indices": []}
-            categories[cat]["f1_scores"].append(f1_scores[i])
-            categories[cat]["exact_matches"].append(exact_matches[i])
-            categories[cat]["indices"].append(i)
-
-        for cat, data in categories.items():
-            avg_f1 = np.mean(data["f1_scores"])
-            avg_em = np.mean(data["exact_matches"])
-            count = len(data["f1_scores"])
-            print(f"{cat}: F1={avg_f1:.4f}, EM={avg_em:.4f}, Count={count}")
-
-            # Show one example from each category
-            best_idx_in_cat = data["indices"][np.argmax(data["f1_scores"])]
-            print(f"  Best example: {prompts_list[best_idx_in_cat][:100]}...")
-            print(f"  Prediction: {preds[best_idx_in_cat]}")
-            print()
-
-    # Create results dictionary
-    results = {
-        "test_size": len(preds),
-        "bert_score": bert_scores,
-        "exact_match": exact_match_score,
-        "avg_prediction_length": np.mean(pred_lengths),
-        "avg_reference_length": np.mean(ref_lengths),
-        "predictions": preds,
-        "references": refs,
-        "prompts": prompts_list,
-        "individual_scores": {
-            "bert_f1": f1_scores,
-            "exact_match": exact_matches
-        }
+                # Fallback: extract after [/INST] if "Answer:" not found
+                if '[/INST]' in generated_text:
+                    synthetic_answer = generated_text.split('[/INST]')[-1].strip()
+                    # Remove "Answer:" prefix if it exists
+                    if synthetic_answer.startswith('Answer:'):
+                        synthetic_answer = synthetic_answer[7:].strip()
+                else:
+                    synthetic_answer = "No answer"
+            
+            # Additional cleanup and validation
+            if synthetic_answer:
+                # Stop at first sentence if answer is too long
+                sentences = synthetic_answer.split('.')
+                if len(sentences) > 1 and len(sentences[0]) > 5:
+                    synthetic_answer = sentences[0].strip()
+                
+                # Remove any remaining formatting artifacts
+                synthetic_answer = synthetic_answer.replace('\n', ' ').strip()
+                
+                # Check if answer is reasonable (not empty, not too long)
+                if len(synthetic_answer) < 2 or len(synthetic_answer) > 200:
+                    synthetic_answer = "No answer"
+                    failed_generations += 1
+                else:
+                    # Check if the answer exists in the context (if context is available)
+                    context = example.get('context', '')
+                    if context and synthetic_answer.lower() not in context.lower():
+                        # Answer not found in context, mark as "No answer"
+                        synthetic_answer = "No answer"
+                        failed_generations += 1
+                    else:
+                        successful_generations += 1
+            else:
+                synthetic_answer = "No answer"
+                failed_generations += 1
+            
+        except Exception as e:
+            # Handle any generation errors
+            synthetic_answer = "No answer"
+            failed_generations += 1
+            print(f"\nWarning: Generation failed for example {idx}: {str(e)}")
+        
+        # Create new example with synthetic answer
+        new_example = example.copy()
+        
+        # Update the prompt to include the generated answer in correct format
+        # Format: "[INST] ... [/INST] Answer: {synthetic_answer}"
+        if '[/INST]' in prompt:
+            base_prompt = prompt.split('[/INST]')[0] + '[/INST] Answer:'
+            new_example['prompt'] = base_prompt + ' ' + synthetic_answer
+        else:
+            new_example['prompt'] = prompt + ' ' + synthetic_answer
+        
+        # Update the reference to the synthetic answer
+        new_example['reference'] = synthetic_answer
+        
+        # If original data has structured fields, preserve them and update answers
+        if 'answers' in example:
+            if synthetic_answer != "No answer":
+                # Try to find answer in context if context exists
+                context = example.get('context', '')
+                answer_start = context.find(synthetic_answer) if context else 0
+                if answer_start == -1:
+                    answer_start = 0
+                
+                new_example['answers'] = {
+                    'text': [synthetic_answer],
+                    'answer_start': [answer_start]
+                }
+            else:
+                # No answer case - follow SQuAD v2 format
+                new_example['answers'] = {
+                    'text': [],
+                    'answer_start': []
+                }
+        
+        # Add generation metadata
+        new_example['generation_num'] = generation_num
+        new_example['synthetic'] = True
+        
+        synthetic_data.append(new_example)
+        
+        # Update progress bar with statistics
+        success_rate = (successful_generations / (idx + 1)) * 100
+        progress_bar.set_postfix({
+            'Success': f'{successful_generations}/{idx + 1}',
+            'Rate': f'{success_rate:.1f}%',
+            'Failed': failed_generations,
+            'No Answer': failed_generations
+        })
+        
+        # Update description every 100 examples
+        if (idx + 1) % 100 == 0:
+            progress_bar.set_description(
+                f"🤖 Gen {generation_num} - Generated {idx + 1}/{total_examples}"
+            )
+    
+    # Close progress bar
+    progress_bar.close()
+    
+    # Print final statistics
+    print(f"✅ Generation {generation_num} completed:")
+    print(f"   📊 Total examples processed: {total_examples}")
+    print(f"   ✅ Successful generations: {successful_generations}")
+    print(f"   ❌ No answer cases: {failed_generations}")
+    print(f"   📈 Success rate: {(successful_generations/total_examples)*100:.1f}%")
+    print(f"   📈 No answer rate: {(failed_generations/total_examples)*100:.1f}%")
+    
+    # Create a new formatted dataset with the synthetic data
+    print("📦 Creating synthetic dataset...")
+    with tqdm(total=1, desc="📦 Building Dataset", position=1, leave=False) as dataset_pbar:
+        synthetic_dataset = Dataset.from_list(synthetic_data)
+        dataset_pbar.update(1)
+    
+    # Return in the same format as input
+    return {
+        'train': synthetic_dataset
     }
 
-    # Save detailed results
-    print(f"\n{'='*60}")
-    print("SAVING RESULTS")
-    print("="*60)
 
-    # Save main results
-    with open("test_evaluation_results.json", "w") as f:
-        json.dump({k: v for k, v in results.items() if k != "prompts"}, f, indent=2)
+def save_synthetic_dataset(dataset_dir, synthetic_formatted_dataset, generation_num):
+    """
+    Save the synthetic formatted dataset to a new subdirectory.
+    
+    Args:
+        dataset_dir: Base dataset directory
+        synthetic_formatted_dataset: Formatted dataset with synthetic answers
+        generation_num: Generation number
+    """
+    
+    # Create new subdirectory
+    new_dir = os.path.join(dataset_dir, f"generation_{generation_num}")
+    os.makedirs(new_dir, exist_ok=True)
+    
+    # Save the train split
+    synthetic_formatted_dataset['train'].save_to_disk(os.path.join(new_dir, "train"))
+    
+    # Also save as JSON for inspection
+    json_file = os.path.join(new_dir, "synthetic_data.json")
+    synthetic_formatted_dataset['train'].to_json(json_file)
+    
+    # Save metadata
+    metadata = {
+        "generation_number": generation_num,
+        "total_examples": len(synthetic_formatted_dataset['train']),
+        "generated_from": "fine_tuned_model",
+        "description": f"Synthetic answers generated using fine-tuned model (Generation {generation_num})",
+        "format": "formatted_dataset_with_prompts"
+    }
+    
+    with open(os.path.join(new_dir, "metadata.json"), "w") as f:
+        json.dump(metadata, f, indent=2)
+    
+    print(f"Saved synthetic formatted dataset to {new_dir}")
+    return new_dir
 
-    # Save detailed examples
-    with open("detailed_predictions.txt", "w", encoding="utf-8") as f:
-        f.write("DETAILED TEST SET PREDICTIONS\n")
-        f.write("="*80 + "\n\n")
-
-        for i, (prompt, pred, ref, f1_score, em) in enumerate(zip(prompts_list, preds, refs, f1_scores, exact_matches)):
-            f.write(f"Example {i+1}:\n")
-            f.write(f"BERTScore F1: {f1_score:.4f}\n")
-            f.write(f"Exact Match: {'✓' if em else '✗'}\n")
-
-            if "Question:" in prompt:
-                question = prompt.split("Question:")[-1].split("Answer:")[0].strip()
-                f.write(f"Question: {question}\n")
-            else:
-                f.write(f"Prompt: {prompt}\n")
-
-            f.write(f"Reference: {ref}\n")
-            f.write(f"Prediction: {pred}\n")
-            f.write("-" * 50 + "\n\n")
-
-    print("Results saved to:")
-    print("  - test_evaluation_results.json")
-    print("  - detailed_predictions.txt")
-    print("="*60)
-
-    return results
-
-
-def generate_new_dataset(prompts, predictions):
-    records = []
-    for prompt, pred in zip(prompts, predictions):
-        parts = prompt.split("Context:")[-1].split("Question:")
-        context = parts[0].strip()
-        question = parts[1].split("[/INST]")[0].strip()
-        records.append({
-            "context": context,
-            "question": question,
-            "answers": {"text": [pred]}
-        })
-    return Dataset.from_list(records)
-
-
-def generate_dataset_from_model(model, tokenizer, dataset, max_examples=None):
-    formatted = dataset.map(make_prompt)
-    if max_examples is not None:
-        formatted = formatted.select(range(max_examples))
-
-    model.eval()
-    preds = []
-    prompts_list = []
-
-    print(f"Generating synthetic answers for {len(formatted)} examples...")
-    for example in formatted:
-        inputs = tokenizer(
-            example["prompt"],
-            return_tensors="pt",
-            truncation=True,
-            padding="max_length",
-            max_length=512
-        ).to(model.device)
-
-        with torch.no_grad():
-            output = model.generate(
-                **inputs,
-                max_new_tokens=50,
-                do_sample=False,
-                pad_token_id=tokenizer.eos_token_id
-            )
-
-        decoded = tokenizer.decode(output[0], skip_special_tokens=True)
-        if '[/INST]' in decoded:
-            answer = decoded.split('[/INST]')[-1].strip()
-        else:
-            answer = decoded.strip()
-
-        preds.append(answer)
-        prompts_list.append(example["prompt"])
-
-    new_dataset = generate_new_dataset(prompts_list, preds)
-    return new_dataset
+def extract_model_nick(model_path):
+    # Extract the part after the first "/"
+    model_name = model_path.split("/")[1]
+    
+    # Match common patterns like "phi-3" or "Mistral-7B"
+    match = re.match(r"([A-Za-z0-9\-]+?)(?=-\d|-[a-zA-Z])", model_name)
+    
+    return match.group(1) if match else model_name
+    
