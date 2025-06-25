@@ -8,7 +8,6 @@ The rise of **Large Language Models (LLMs)** has transformed natural language pr
 
 Model collapse occurs when generative models, repeatedly trained on their own outputs, drift away from the true distribution of human language. Early stages lose rare but informative patterns, while later stages produce **homogenized, low-variance outputs**. This gradual degradation stems from accumulating statistical, expressive, and optimization-related errors across generations, ultimately threatening the sustainability and reliability of future LLMs.
 
----
 
 ## Requirements
 
@@ -20,7 +19,6 @@ Model collapse occurs when generative models, repeatedly trained on their own ou
   All dependencies are listed in `requirements.txt`. Install via:
   `pip install -r requirements.txt`
 
----
 
 ## Architecture & Module Overview
 
@@ -43,7 +41,6 @@ SelfPlagAI is organized into several modular components, each responsible for a 
    * **Model Evaluation**: Generates predictions on a held-out test set, computes a suite of metrics (Exact Match, token-level F1, BERTScore F1, Jaccard semantic similarity), and saves both a detailed text report and structured JSON/CSV summaries.
    * **Prediction Export**: Exports model outputs to JSON files and optionally to MongoDB, enabling downstream analysis or visualization.
 
----
 
 ## Setup & Usage
 
@@ -66,7 +63,6 @@ SelfPlagAI is organized into several modular components, each responsible for a 
 5. **Export predictions**
    Optionally, run the export utilities to dump all model predictions (contexts, questions, references, raw outputs) into JSON files and MongoDB collections for further analysis or for powering a front-end.
 
----
 
 ## Frontend Dashboard (Streamlit)
 
@@ -93,8 +89,6 @@ A user-friendly Streamlit app provides interactive visualization and exploration
 
 A simplified alternative UI lives in **`metriche.py`**, offering the same two view modes with built-in Streamlit line charts and dataframes for quick prototyping.
 
----
-
 With this backend-to-frontend pipeline, SelfPlagAI equips researchers and engineers to:
 
 * **Monitor model quality** over recursive training cycles.
@@ -108,7 +102,6 @@ cd streamlit_app
 streamlit run main.py
 ```
 
----
 
 ## Authors
 
