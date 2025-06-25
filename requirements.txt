@@ -26,3 +26,7 @@ ipywidgets
 # Data processing and manipulation
 pandas
 numpy
+scikit-learn
+
+#fronted
+streamlit
