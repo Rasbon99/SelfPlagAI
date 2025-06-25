@@ -26,6 +26,9 @@ def load_json_files_to_dataframe(directory_path, file_pattern="*.json"):
     if not json_files:
         print(f"❌ No JSON files found in {directory_path}")
         return pd.DataFrame()
+
+    # Sort files to ensure proper order (especially for generation files)
+    json_files.sort(key=lambda x: x.name)
     
     all_data = []
     
