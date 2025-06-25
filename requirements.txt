@@ -28,6 +28,6 @@ pandas
 numpy
 scikit-learn
 
-#fronted
+# Fronted
 streamlit
 plotly

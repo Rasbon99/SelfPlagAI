@@ -10,7 +10,7 @@ def get_mongo_client(username: str, password: str, cluster: str = "x4cluster.n6x
     Returns an authenticated MongoClient for the specified cluster.
 
     Args:
-        username (str): MongoDB username.ù+
+        username (str): MongoDB username.
         password (str): MongoDB password.
         cluster (str): MongoDB cluster host (default: "x4cluster.n6xsnhl.mongodb.net").
 
