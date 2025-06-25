@@ -15,7 +15,7 @@ Model collapse occurs when generative models, repeatedly trained on their own ou
   Install from the official website:
   [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
 
-* **Python 3.8+**
+**Python 3.10+**
   All dependencies are listed in `requirements.txt`. Install via:
   `pip install -r requirements.txt`
 
