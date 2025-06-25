@@ -22,7 +22,7 @@ Model collapse occurs when generative models, repeatedly trained on their own ou
 
 ## Architecture & Module Overview
 
-<img src="https://github.com/user-attachments/assets/2736f6c3-ee4c-4f2f-b956-ce12abaa1c9d" width="500"/>
+<img src="https://github.com/user-attachments/assets/2736f6c3-ee4c-4f2f-b956-ce12abaa1c9d" width="1000"/>
 
 
 SelfPlagAI is organized into several modular components, each responsible for a specific phase of the recursive training pipeline:
@@ -38,7 +38,7 @@ SelfPlagAI is organized into several modular components, each responsible for a 
    * **Model Evaluation**: Generates predictions on a held-out test set, computes a suite of metrics (Exact Match, token-level F1, BERTScore F1, Jaccard semantic similarity), and saves both a detailed text report and structured JSON/CSV summaries.
    * **Prediction Export**: Exports model outputs to JSON files and optionally to MongoDB, enabling downstream analysis or visualization.
 
-<img src="https://github.com/user-attachments/assets/da6b7578-205f-4055-bf42-d519a8bd8758" width="500"/>
+<img src="https://github.com/user-attachments/assets/da6b7578-205f-4055-bf42-d519a8bd8758" width="700"/>
 
 
 3. **`selfTrain.py`**
