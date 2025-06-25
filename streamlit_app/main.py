@@ -16,16 +16,17 @@ st.title("🧠 Dashboard SelfPlagAI")
 
 df_metrics = mn.get_eval_metrics()
 
-col1, col2= st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     model_options = df_metrics['base_model_name'].unique()
     selected_model = st.selectbox("Model:", model_options)
 
+with col2:   
     database_options = df_metrics['database_name'].unique()
     selected_database = st.selectbox("Database:", database_options)
 
-with col2:   
+with col3:   
     plot_options = ['Generations', 'Question']
     selected_gen = st.selectbox("Plot per:", plot_options)
 
@@ -35,12 +36,7 @@ with col2:
     "BERTScore F1": "bert_score_f1",
     "Semantic Similarity": "semantic_similarity"
     }
-    available_metrics = list(metric_map.keys())
-    selected_metrics = st.multiselect(
-        "Select metrics:",
-        options=available_metrics,
-        default=available_metrics
-    ) 
+    selected_metrics = ["Exact Match", "F1 Score", "BERTScore F1", "Semantic Similarity"]
 
 # Filtra per modello e database selezionati
 filtered_df = df_metrics[
@@ -77,9 +73,9 @@ else:
         format_func=lambda i: all_questions[i][:80] + ("..." if len(all_questions[i]) > 80 else "")
     )
 
-    col3, col4 = st.columns([3,2])
+    col4, col5 = st.columns([3,2])
 
-    with col3:
+    with col4:
         # Costruisci il dataframe per la domanda selezionata
         data = {
             "generation": [],
@@ -117,7 +113,7 @@ else:
         )
         st.plotly_chart(fig, use_container_width=True)
     
-    with col4:
+    with col5:
         predictions_data = []
         for _, row in plot_df.iterrows():
             gen_name = row["generation"]
@@ -129,6 +125,15 @@ else:
             predictions_data.append({"Generation": gen_name, "Prediction": prediction_text})
 
         pred_df = pd.DataFrame(predictions_data)
+        # Stampa Question, Context e Reference della domanda selezionata
+        selected_question = all_questions[question_idx]
+        selected_context = filtered_df.iloc[0]['contexts'][question_idx]
+        selected_reference = filtered_df.iloc[0]['references'][question_idx]
+        st.info(
+            f"**Question:** {selected_question}\n\n"
+            f"**Context:** {selected_context}\n\n"
+            f"**Reference:** {selected_reference}"
+        )
         st.dataframe(pred_df, use_container_width=True, hide_index=True)
 
 st.divider()
