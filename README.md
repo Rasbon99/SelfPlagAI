@@ -22,7 +22,7 @@ Model collapse occurs when generative models, repeatedly trained on their own ou
 
 ## Architecture & Module Overview
 
-<img src="https://github.com/user-attachments/assets/2736f6c3-ee4c-4f2f-b956-ce12abaa1c9d" width="1000"/>
+<img src="https://github.com/user-attachments/assets/2736f6c3-ee4c-4f2f-b956-ce12abaa1c9d" width="950"/>
 
 
 SelfPlagAI is organized into several modular components, each responsible for a specific phase of the recursive training pipeline:
@@ -32,19 +32,20 @@ SelfPlagAI is organized into several modular components, each responsible for a 
 
 2. **`train_utils.py`**
 
+<img src="https://github.com/user-attachments/assets/da6b7578-205f-4055-bf42-d519a8bd8758" width="600"/>
+
    * **Data Preparation & Custom Trainer**: Reads SQuAD splits from MongoDB, formats prompts, tokenizes examples, and sets up a bespoke Trainer that combines standard language modeling loss with a BERTScore-based objective and an early-stopping callback.
    * **Synthetic Data Generation**: Uses the fine-tuned model to produce new answers, validates them against context, tracks generation success rates, and packages outputs into HuggingFace Datasets.
    * **Iterative Training Loop**: Automates multi-generation workflows, handling model loading (base or previous checkpoint), LoRA-based parameter-efficient fine-tuning, checkpoint management, and memory cleanup between iterations.
    * **Model Evaluation**: Generates predictions on a held-out test set, computes a suite of metrics (Exact Match, token-level F1, BERTScore F1, Jaccard semantic similarity), and saves both a detailed text report and structured JSON/CSV summaries.
    * **Prediction Export**: Exports model outputs to JSON files and optionally to MongoDB, enabling downstream analysis or visualization.
 
-<img src="https://github.com/user-attachments/assets/da6b7578-205f-4055-bf42-d519a8bd8758" width="700"/>
 
 
-3. **`selfTrain.py`**
+4. **`selfTrain.py`**
    Orchestrates the end-to-end recursive fine-tuning process: it extracts a subset of SQuAD v2 examples, loops through successive training cycles, generates synthetic question-answer pairs using the fine-tuned model, evaluates model performance after each cycle, and exports both data and metadata back to MongoDB.
 
-4. **`load_result_to_mongo.py`**
+5. **`load_result_to_mongo.py`**
    Implements command-line tools to ingest JSON log files—both evaluation results and prediction exports—into MongoDB. Automatically tags each record with source file and directory metadata, and offers flags to clear existing collections before loading.
 
 
