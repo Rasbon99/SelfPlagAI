@@ -1,42 +1,66 @@
-# Importa MongoClient per la connessione a MongoDB
-from pymongo import MongoClient
-
-# Importa os per leggere variabili d'ambiente dal sistema (es. MONGO_URI)
+import sys
 import os
+import pandas as pd
+import numpy as np
+import streamlit as st
 
-# Carica automaticamente le variabili definite in un file .env
+# Aggiunge la cartella precedente al percorso
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..\..')))
+
+import db_utils as db
 from dotenv import load_dotenv
-load_dotenv()
 
-def get_mongo_client():
-    """
-    Crea e restituisce un client MongoDB usando l'URI specificato nella variabile d'ambiente MONGO_URI.
-    Se MONGO_URI non è presente, viene usato di default 'mongodb://localhost:27017' (istanza locale).
-    
-    Questo client rappresenta la connessione al server MongoDB (locale o remoto).
-    """
-    uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-    return MongoClient(uri)
+load_dotenv(os.path.join(os.path.dirname(__file__), '../../key.env'))
 
-def get_db():
-    """
-    Ritorna il database principale del progetto.
-    Per convenzione abbiamo scelto 'selfplagai_db', che identifica chiaramente il progetto SelfPlagAI.
-    
-    MongoDB non richiede di creare esplicitamente un database: basta usarlo e verrà generato.
-    """
-    client = get_mongo_client()
-    return client["selfplagai_db"]  # Puoi rinominarlo ad es. in "qa_evaluation_db" se preferisci
+@st.cache_data
+def get_eval_metrics(collection: str = 'evaluation_results'):
+    username = os.getenv("MONGO_USERNAME")
+    password = os.getenv("MONGO_PASSWORD")
 
-def get_collection(name="results"):
-    """
-    Restituisce una collezione specifica dal database, di default 'results'.
+    if not username or not password:
+        raise ValueError("MONGO_USERNAME o MONGO_PASSWORD non trovati nelle variabili d'ambiente")
 
-    Esempi:
-    - 'results': per salvare le risposte generate dai modelli (prompt, base, fine-tuned)
-    - 'metrics': per salvare le metriche di valutazione (EM, F1, SAS)
-    - 'logs': per salvare cronologia, timestamp o meta-informazioni
+    client = db.get_mongo_client(username, password)
+    df_metrics = db.read_collection(client, collection, as_dataframe=True)
 
-    Il nome può essere cambiato dinamicamente quando si chiama la funzione.
-    """
-    return get_db()[name]
+    # Prendi la prima riga (assumendo che sia quella che ti interessa)
+    row = df_metrics.iloc[0]
+
+    # Trova tutte le colonne che rappresentano una generazione
+    generations = [col for col in df_metrics.columns if col.startswith('generation_')]
+
+    records = []
+    for gen_col in generations:
+        gen = row[gen_col]
+        if gen is None or not isinstance(gen, dict):
+            continue
+
+        individual_scores = gen.get('individual_scores', {})
+        generation_num = gen.get('generation', gen_col)
+        generation_name = f"Generation {generation_num}"
+        record = {
+            'generation': generation_name,
+            'test_size': gen.get('test_size', np.nan),
+            'exact_match': gen.get('exact_match', np.nan),
+            'f1_score': gen.get('f1_score', np.nan),
+            'bert_score_f1': gen.get('bert_score_f1', np.nan),
+            'semantic_similarity': gen.get('semantic_similarity', np.nan),
+            'avg_prediction_length': gen.get('avg_prediction_length', np.nan),
+            'avg_reference_length': gen.get('avg_reference_length', np.nan),
+            'predictions': gen.get('predictions', []),
+            'references': gen.get('references', []),
+            'questions': gen.get('questions', []),
+            'contexts': gen.get('contexts', []),
+            'individual_bert_f1': individual_scores.get('bert_f1', []),
+            'individual_token_f1': individual_scores.get('token_f1', []),
+            'individual_exact_match': individual_scores.get('exact_match', []),
+            'individual_semantic_similarity': individual_scores.get('semantic_similarity', []),
+            'database_name': gen.get('database_name', None),
+            'test_collection': gen.get('test_collection', None),
+            'base_model_name': gen.get('base_model_name', None),
+            'model_nick': gen.get('model_nick', None),
+        }
+        records.append(record)
+
+    df_generations = pd.DataFrame(records)
+    return df_generations
