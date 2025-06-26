@@ -34,9 +34,10 @@ with col3:
     "Exact Match": "exact_match",
     "F1 Score": "f1_score",
     "BERTScore F1": "bert_score_f1",
-    "Semantic Similarity": "semantic_similarity"
+    "Semantic Similarity": "semantic_similarity",
+    "Type Token Ration" : "ttr"
     }
-    selected_metrics = ["Exact Match", "F1 Score", "BERTScore F1", "Semantic Similarity"]
+    selected_metrics = ["Exact Match", "F1 Score", "BERTScore F1", "Semantic Similarity", "Type Token Ration"]
 
 # Filtra per modello e database selezionati
 filtered_df = df_metrics[
@@ -95,6 +96,8 @@ else:
                 data["BERTScore F1"].append(row["individual_bert_f1"][question_idx])
             if "Semantic Similarity" in selected_metrics:
                 data["Semantic Similarity"].append(row["individual_semantic_similarity"][question_idx])
+            if "Type Token Ration" in selected_metrics:
+                data["Type Token Ration"].append(row["individual_ttr"][question_idx])
         chart_df = pd.DataFrame(data).set_index("generation")
         # Trasformazione per plotly
         plotly_df = chart_df.reset_index().melt(
