@@ -15,7 +15,7 @@ Model collapse occurs when generative models, repeatedly trained on their own ou
   Install from the official website:
   [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
 
-**Python 3.10+**
+* **Python 3.10+**
   All dependencies are listed in `requirements.txt`. Install via:
   `pip install -r requirements.txt`
 
@@ -40,13 +40,13 @@ SelfPlagAI is organized into several modular components, each responsible for a 
    * **Model Evaluation**: Generates predictions on a held-out test set, computes a suite of metrics (Exact Match, token-level F1, BERTScore F1, Jaccard semantic similarity), and saves both a detailed text report and structured JSON/CSV summaries.
    * **Prediction Export**: Exports model outputs to JSON files and optionally to MongoDB, enabling downstream analysis or visualization.
 
+4. **`load_result_to_mongo.py`**
+   Implements command-line tools to ingest JSON log files—both evaluation results and prediction exports—into MongoDB. Automatically tags each record with source file and directory metadata, and offers flags to clear existing collections before loading.
 
-
-4. **`selfTrain.py`**
+5. **`selfTrain.py`**
    Orchestrates the end-to-end recursive fine-tuning process: it extracts a subset of SQuAD v2 examples, loops through successive training cycles, generates synthetic question-answer pairs using the fine-tuned model, evaluates model performance after each cycle, and exports both data and metadata back to MongoDB.
 
-5. **`load_result_to_mongo.py`**
-   Implements command-line tools to ingest JSON log files—both evaluation results and prediction exports—into MongoDB. Automatically tags each record with source file and directory metadata, and offers flags to clear existing collections before loading.
+
 
 
 ## Setup & Usage
@@ -77,24 +77,26 @@ A user-friendly Streamlit app provides interactive visualization and exploration
 
 1. **`main.py`**
 
-   * **Dashboard Layout**: A wide-layout page titled “🧠 Dashboard SelfPlagAI” with three control panels:
+   * **Dashboard Layout**: A wide-layout with three control panels:
 
      * **Model selector** to choose among base model names.
      * **Database selector** to pick the MongoDB evaluation collection.
-     * **View mode selector** (“Generations” vs. “Question”) to switch between aggregate trends and per-question analysis.
-   * **Generations View**: Plots line charts of evaluation metrics (Exact Match, F1, BERTScore F1, Semantic Similarity) across all generations for the selected model/database pair.
+     * **View mode selector** to switch between aggregate trends and per-question analysis.
+   * **Generations View**: Plots line charts of evaluation metrics (Exact Match, F1, BERTScore F1, Semantic Similarity and Type-Token Ratio) across all generations for the selected model/database pair.
    * **Question View**:
 
      * Presents a dropdown of all test-set questions.
      * Displays a multi-metric line chart showing how the selected question’s performance evolves across generations.
      * Shows the question’s context and reference answer, alongside a table of the model’s prediction at each generation.
 
-2. **`utils/mongo.py`**
+2. **`mongo.py`**
 
-   * **Data Retrieval**: Connects to MongoDB using credentials from `key.env` and the shared `db_utils` module.
-   * **Metric Aggregation**: Reads the `evaluation_results` collection into a pandas DataFrame, extracts per-generation dictionaries of scores and metadata, and constructs a unified table with one row per generation containing all aggregated and individual-example metrics.
+   * **Data Retrieval**: Establishes a connection to MongoDB using credentials loaded from `key.env` and shared functions in `db_utils.py`. It reads two collections—`evaluation_results` (per-generation metrics and metadata) and `ttr_results` (type-token ratio metrics)—into pandas DataFrames, cached for performance.
+   * **Metric Aggregation and Enrichment**:
 
-A simplified alternative UI lives in **`metriche.py`**, offering the same two view modes with built-in Streamlit line charts and dataframes for quick prototyping.
+     * Iterates over all `generation_*` fields in the evaluation DataFrame to unpack each generation’s dictionary of scores (Exact Match, F1, BERTScore, semantic similarity, lengths, etc.) and per-example arrays (predictions, references, questions, contexts).
+     * For each generation, it also retrieves **individual TTR** values (one per test question) and a **mean TTR** for that generation from the `ttr_results` DataFrame, adding `individual_ttr` and `ttr` columns.
+     * Constructs a unified DataFrame where each row represents one generation, combining all aggregated metrics, per-question scores, and newly integrated TTR statistics for downstream plotting and analysis.
 
 With this backend-to-frontend pipeline, SelfPlagAI equips researchers and engineers to:
 
@@ -108,7 +110,6 @@ Proceed to launch the dashboard:
 cd streamlit_app
 streamlit run main.py
 ```
-
 
 ## Authors
 
