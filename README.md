@@ -102,12 +102,17 @@ With this backend-to-frontend pipeline, SelfPlagAI equips researchers and engine
 * **Investigate individual examples**, spotting where self-training helps or fails.
 * **Compare multiple metrics** side by side, supporting data-driven decisions on filtering or data-provenance controls.
 
-Proceed to launch the dashboard:
+### Launch the Dashboard
+
+To start the Streamlit dashboard, run the following commands from the **root of the project**:
 
 ```bash
-cd streamlit_app
-streamlit run main.py
+# From the root directory (e.g., SelfPlagAI/)
+export PYTHONPATH=.
+streamlit run streamlit_app/main.py
 ```
+
+> ℹ️ Setting `PYTHONPATH=.` ensures that the application can properly import project-level modules such as `db_utils.py`.
 
 ## Authors
 

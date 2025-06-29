@@ -24,7 +24,7 @@ with col1:
 
 with col2:   
     database_options = df_metrics['database_name'].unique()
-    selected_database = st.selectbox("Database:", database_options)
+    selected_database = st.selectbox("Dataset:", database_options)
 
 with col3:   
     plot_options = ['Generations', 'Question']
