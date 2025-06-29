@@ -23,53 +23,59 @@ with col1:
     selected_model = st.selectbox("Model:", model_options)
 
 with col2:   
-    database_options = df_metrics['database_name'].unique()
-    selected_database = st.selectbox("Dataset:", database_options)
+    dataset_options = df_metrics['database_name'].unique()
+    selected_dataset = st.selectbox("Dataset:", dataset_options)
 
 with col3:   
-    plot_options = ['Generations', 'Question']
-    selected_gen = st.selectbox("Plot per:", plot_options)
+    plot_options = ['Average by Generation', 'Detail by Question']
+    selected_gen = st.selectbox("View mode:", plot_options)
 
     metric_map = {
-    "Exact Match": "exact_match",
-    "F1 Score": "f1_score",
-    "BERTScore F1": "bert_score_f1",
-    "Semantic Similarity": "semantic_similarity",
-    "Type Token Ration" : "ttr"
+        "Exact Match": "exact_match",
+        "F1 Score": "f1_score",
+        "BERTScore F1": "bert_score_f1",
+        "Semantic Similarity": "semantic_similarity",
+        "Type Token Ratio" : "ttr"
     }
-    selected_metrics = ["Exact Match", "F1 Score", "BERTScore F1", "Semantic Similarity", "Type Token Ration"]
+    selected_metrics = ["Exact Match", "F1 Score", "BERTScore F1", "Semantic Similarity", "Type Token Ratio"]
 
-# Filtra per modello e database selezionati
+# Filtra per modello e dataset selezionati
 filtered_df = df_metrics[
     (df_metrics['base_model_name'] == selected_model) &
-    (df_metrics['database_name'] == selected_database)
+    (df_metrics['database_name'] == selected_dataset)
 ]
 
-if selected_gen == "Generations":
+if selected_gen == "Average by Generation":
     plot_df = filtered_df.copy()
     plot_df['generation_num'] = plot_df['generation'].str.extract(r'(\d+)').astype(int)
     plot_df = plot_df.sort_values('generation_num')
-    # Melt per plotly
+
+    # Melt per plotly con nomi tecnici
     plotly_df = plot_df.melt(
         id_vars=['generation'],
         value_vars=[metric_map[m] for m in selected_metrics],
-        var_name='Metrica',
-        value_name='Valore'
+        var_name='Metrics',
+        value_name='Value'
     )
+
+    # Mappa inversa per avere i nomi friendly
+    inverse_metric_map = {v: k for k, v in metric_map.items()}
+    plotly_df['Metrics'] = plotly_df['Metrics'].map(inverse_metric_map)
+
     fig = px.line(
         plotly_df,
         x='generation',
-        y='Valore',
-        color='Metrica',
+        y='Value',
+        color='Metrics',
         markers=True,
-        labels={'generation': 'Generation', 'Valore': 'Valore', 'Metrica': 'Metrica'}
+        labels={'generation': 'Generation', 'Value': 'Value', 'Metrics': 'Metrics'}
     )
     st.plotly_chart(fig, use_container_width=True)
 else:
     # Seleziona la domanda
     all_questions = filtered_df.iloc[0]['questions']
     question_idx = st.selectbox(
-        "Select a Question:",
+        "Select a question:",
         options=list(range(len(all_questions))),
         format_func=lambda i: all_questions[i][:80] + ("..." if len(all_questions[i]) > 80 else "")
     )
@@ -96,23 +102,23 @@ else:
                 data["BERTScore F1"].append(row["individual_bert_f1"][question_idx])
             if "Semantic Similarity" in selected_metrics:
                 data["Semantic Similarity"].append(row["individual_semantic_similarity"][question_idx])
-            if "Type Token Ration" in selected_metrics:
-                data["Type Token Ration"].append(row["individual_ttr"][question_idx])
+            if "Type Token Ratio" in selected_metrics:
+                data["Type Token Ratio"].append(row["individual_ttr"][question_idx])
         chart_df = pd.DataFrame(data).set_index("generation")
         # Trasformazione per plotly
         plotly_df = chart_df.reset_index().melt(
             id_vars=['generation'],
             value_vars=selected_metrics,
-            var_name='Metrica',
-            value_name='Valore'
+            var_name='Metrics',
+            value_name='Value'
         )
         fig = px.line(
             plotly_df,
             x='generation',
-            y='Valore',
-            color='Metrica',
+            y='Value',
+            color='Metrics',
             markers=True,
-            labels={'generation': 'Generation', 'Valore': 'Valore', 'Metrica': 'Metrica'}
+            labels={'generation': 'Generation', 'Value': 'Value', 'Metrics': 'Metrics'}
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -140,11 +146,3 @@ else:
         st.dataframe(pred_df, use_container_width=True, hide_index=True)
 
 st.divider()
-
-
-
-
-
-
-
-
