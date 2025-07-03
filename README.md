@@ -125,4 +125,4 @@ streamlit run streamlit_app/main.py
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE). For full terms, see the LICENSE file.
+This project is licensed under the [GPL-3.0 license](LICENSE). For full terms, see the LICENSE file.
